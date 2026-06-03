@@ -11,3 +11,8 @@ uploads/*
 logs/*.log
 .DS_Store
 Thumbs.db
+
+database.sql
+/database.sql
+*.sql
+*.SQL
