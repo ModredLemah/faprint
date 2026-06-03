@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FA Print — Verify OTP</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<style>
+:root{--primary:#4fc3f7;--accent:#1e40af;--dark:#1f2937;--border:rgba(255,255,255,.12);--text-muted:#94a3b8;--white:#ffffff;--shadow:0 20px 60px rgba(0,0,0,.35);}
+[data-theme="light"]{--bg:#f0f4f8;--card-bg:#ffffff;--border:rgba(0,0,0,.1);--text:#1f2937;--text-muted:#64748b;--shadow:0 20px 60px rgba(0,0,0,.10);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg,#1f2937);color:var(--text,#fff);min-height:100vh;transition:background .3s,color .3s;}
+.navbar{position:sticky;top:0;z-index:100;height:68px;background:rgba(31,41,55,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 5%;}
+[data-theme="light"] .navbar{background:rgba(255,255,255,.95);}
+.nav-brand{font-family:'Sora',sans-serif;font-weight:800;font-size:1.45rem;letter-spacing:-.5px;background:linear-gradient(90deg,var(--primary),#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.theme-toggle{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text-muted);padding:8px 14px;border-radius:8px;font-size:.88rem;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.wrap{min-height:calc(100vh - 68px);display:flex;align-items:center;justify-content:center;padding:40px 20px;position:relative;overflow:hidden;}
+.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18;pointer-events:none;}
+.b1{width:500px;height:500px;background:var(--accent);top:-100px;left:-150px;}
+.b2{width:400px;height:400px;background:var(--primary);bottom:-80px;right:-100px;}
+.card{background:var(--card-bg,rgba(255,255,255,.05));border:1px solid var(--border);border-radius:24px;padding:44px 40px;width:100%;max-width:420px;backdrop-filter:blur(20px);box-shadow:var(--shadow);position:relative;z-index:1;animation:fadeUp .6s ease both;text-align:center;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.icon-wrap{width:80px;height:80px;border-radius:20px;background:rgba(79,195,247,.12);border:1px solid rgba(79,195,247,.25);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--primary);margin:0 auto 24px;}
+.logo{font-family:'Sora',sans-serif;font-weight:800;font-size:2rem;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
+.tagline{color:var(--text-muted);font-size:.88rem;margin-bottom:28px;}
+.title{font-family:'Sora',sans-serif;font-size:1.4rem;font-weight:700;margin-bottom:8px;}
+.sub{color:var(--text-muted);font-size:.9rem;margin-bottom:32px;line-height:1.6;}
+/* OTP INPUTS */
+.otp-row{display:flex;gap:10px;justify-content:center;margin-bottom:28px;}
+.otp-box{width:52px;height:60px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:12px;text-align:center;font-size:1.6rem;font-weight:700;font-family:'Sora',sans-serif;color:var(--text,#fff);outline:none;transition:border-color .2s,box-shadow .2s;}
+[data-theme="light"] .otp-box{background:#f8fafc;color:#1f2937;}
+.otp-box:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,195,247,.15);}
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--primary),var(--accent));border:none;border-radius:10px;color:#fff;font-size:1rem;font-weight:700;letter-spacing:.3px;transition:transform .15s,box-shadow .2s;box-shadow:0 8px 24px rgba(30,64,175,.35);}
+.btn:hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(30,64,175,.45);}
+.resend{margin-top:20px;font-size:.88rem;color:var(--text-muted);}
+.resend span{color:var(--primary);font-weight:600;cursor:pointer;}
+.resend span:hover{text-decoration:underline;}
+.timer{color:var(--primary);font-weight:600;}
+.error{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#f87171;border-radius:8px;padding:10px 14px;font-size:.88rem;margin-bottom:16px;display:none;}
+.success{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#4ade80;border-radius:8px;padding:10px 14px;font-size:.88rem;margin-bottom:16px;display:none;}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="fa_print_landing.html" class="nav-brand">FA Print</a>
+  <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-circle-half-stroke"></i> <span id="tlabel">Light Mode</span></button>
+</nav>
+<div class="wrap">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="card">
+    <div class="icon-wrap"><i class="fas fa-shield-halved"></i></div>
+    <div class="logo">FA Print</div>
+    <div class="tagline">Far Fast Print — Your 24/7 Printing Bridge</div>
+    <div class="title">Verify Your Account</div>
+    <div class="sub">We've sent a 6-digit OTP to<br><strong id="email-display">your email</strong><br>Enter it below to activate your account.</div>
+    <div class="error" id="err"></div>
+    <div class="success" id="suc"></div>
+    <div class="otp-row">
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" id="o1" oninput="move(this,null,'o2')"/>
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" id="o2" oninput="move(this,'o1','o3')"/>
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" id="o3" oninput="move(this,'o2','o4')"/>
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" id="o4" oninput="move(this,'o3','o5')"/>
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" id="o5" oninput="move(this,'o4','o6')"/>
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" id="o6" oninput="move(this,'o5',null)"/>
+    </div>
+    <button class="btn" onclick="verify()">Verify &amp; Continue</button>
+    <div class="resend">Didn't get the code? <span id="resend-btn" onclick="resend()">Resend OTP</span> <span class="timer" id="timer" style="display:none"></span></div>
+  </div>
+</div>
+<script>
+const saved=localStorage.getItem('fa_theme')||'dark';
+if(saved==='light')applyLight();
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme');if(c==='light'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('fa_theme','dark');document.getElementById('tlabel').textContent='Light Mode';}else{applyLight();}}
+function applyLight(){document.documentElement.setAttribute('data-theme','light');localStorage.setItem('fa_theme','light');document.getElementById('tlabel').textContent='Dark Mode';}
+
+const pendingEmail=localStorage.getItem('fa_pending_otp_email')||'';
+document.getElementById('email-display').textContent=pendingEmail||'your email';
+
+function move(el,prevId,nextId){
+  if(el.value&&nextId)document.getElementById(nextId).focus();
+  if(!el.value&&prevId)document.getElementById(prevId).focus();
+}
+
+let countdown;
+function startCountdown(secs){
+  clearInterval(countdown);
+  const btn=document.getElementById('resend-btn');
+  const timer=document.getElementById('timer');
+  btn.style.display='none';timer.style.display='inline';
+  let s=secs;
+  timer.textContent='('+s+'s)';
+  countdown=setInterval(()=>{s--;timer.textContent='('+s+'s)';if(s<=0){clearInterval(countdown);btn.style.display='inline';timer.style.display='none';}},1000);
+}
+startCountdown(60);
+
+function resend(){
+  const otp=String(Math.floor(100000+Math.random()*900000));
+  localStorage.setItem('fa_otp_'+pendingEmail,otp);
+  const users=JSON.parse(localStorage.getItem('fa_users')||'[]');
+  const idx=users.findIndex(u=>u.email===pendingEmail);
+  if(idx>-1){users[idx].otp=otp;localStorage.setItem('fa_users',JSON.stringify(users));}
+  alert('New OTP sent!\n\nFor demo, your OTP is: '+otp);
+  startCountdown(60);
+}
+
+function verify(){
+  const entered=[1,2,3,4,5,6].map(i=>document.getElementById('o'+i).value).join('');
+  const err=document.getElementById('err');const suc=document.getElementById('suc');
+  err.style.display='none';suc.style.display='none';
+  if(entered.length<6){err.textContent='Please enter all 6 digits.';err.style.display='block';return;}
+  const storedOtp=localStorage.getItem('fa_otp_'+pendingEmail);
+  if(entered!==storedOtp){err.textContent='Incorrect OTP. Please try again.';err.style.display='block';return;}
+  // Mark verified
+  const users=JSON.parse(localStorage.getItem('fa_users')||'[]');
+  const idx=users.findIndex(u=>u.email===pendingEmail);
+  if(idx>-1){users[idx].verified=true;localStorage.setItem('fa_users',JSON.stringify(users));}
+  suc.textContent='✅ Account verified! Redirecting to login…';suc.style.display='block';
+  setTimeout(()=>window.location.href='fa_print_login.html',1500);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FA Print — Student Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+:root{
+  --primary:#4fc3f7;--accent:#1e40af;--dark:#1f2937;
+  --border:rgba(255,255,255,.12);--text-muted:#94a3b8;
+  --white:#ffffff;--shadow:0 8px 32px rgba(0,0,0,.25);--radius:14px;
+}
+[data-theme="light"]{
+  --bg:#f0f4f8;--card-bg:#ffffff;--border:rgba(0,0,0,.08);
+  --text:#1f2937;--text-muted:#64748b;--surface:#f8fafc;
+  --shadow:0 4px 20px rgba(0,0,0,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg,#1f2937);color:var(--text,#fff);min-height:100vh;transition:background .3s,color .3s;}
+
+/* NAVBAR */
+.navbar{position:sticky;top:0;z-index:200;height:68px;background:rgba(31,41,55,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 5%;}
+[data-theme="light"] .navbar{background:rgba(255,255,255,.97);}
+.nav-brand{font-family:'Sora',sans-serif;font-weight:800;font-size:1.45rem;letter-spacing:-.5px;background:linear-gradient(90deg,var(--primary),#818cf8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-user{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border:1px solid var(--border);padding:7px 14px;border-radius:99px;font-size:.88rem;}
+[data-theme="light"] .nav-user{background:#f0f4f8;}
+.nav-user .avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;}
+.theme-toggle{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text-muted);padding:8px 14px;border-radius:8px;font-size:.88rem;transition:all .2s;display:flex;align-items:center;gap:6px;cursor:pointer;font-family:inherit;}
+.theme-toggle:hover{color:var(--text,#fff);border-color:var(--primary);}
+.logout-btn{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#f87171;padding:8px 14px;border-radius:8px;font-size:.88rem;font-family:inherit;cursor:pointer;transition:all .2s;}
+.logout-btn:hover{background:rgba(239,68,68,.22);}
+
+/* LAYOUT */
+.main{max-width:1180px;margin:0 auto;padding:32px 24px;}
+.page-header{margin-bottom:28px;animation:fadeUp .5s ease both;}
+.page-header h1{font-family:'Sora',sans-serif;font-size:1.75rem;font-weight:700;margin-bottom:4px;}
+.page-header p{color:var(--text-muted);font-size:.95rem;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:28px;animation:fadeUp .5s .1s ease both;}
+.stat-card{background:var(--card-bg,rgba(255,255,255,.05));border:1px solid var(--border);border-radius:var(--radius);padding:22px;backdrop-filter:blur(12px);box-shadow:var(--shadow);}
+.stat-label{font-size:.8rem;color:var(--text-muted);font-weight:500;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px;}
+.stat-val{font-family:'Sora',sans-serif;font-size:2rem;font-weight:800;line-height:1;}
+.stat-val.blue{background:linear-gradient(135deg,var(--primary),var(--accent));background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-val.green{background:linear-gradient(135deg,#4ade80,#16a34a);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-val.yellow{background:linear-gradient(135deg,#fbbf24,#d97706);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-val.purple{background:linear-gradient(135deg,#818cf8,#6d28d9);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+/* MAP PANEL */
+.map-panel{background:var(--card-bg,rgba(255,255,255,.05));border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:28px;animation:fadeUp .5s .15s ease both;}
+.map-header{padding:16px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;border-bottom:1px solid var(--border);}
+.map-title{font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px;}
+.map-title i{color:var(--primary);}
+.map-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.map-legend{display:flex;align-items:center;gap:12px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:.78rem;color:var(--text-muted);}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.legend-dot.me-dot{background:#4fc3f7;box-shadow:0 0 6px rgba(79,195,247,.7);}
+.legend-dot.active-dot{background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,.7);}
+.legend-dot.busy-dot{background:#fbbf24;box-shadow:0 0 6px rgba(251,191,36,.7);}
+.loc-status{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text-muted);padding:6px 12px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:99px;}
+.loc-dot{width:8px;height:8px;border-radius:50%;background:#94a3b8;flex-shrink:0;}
+.loc-dot.gps-active{background:#4ade80;box-shadow:0 0 8px #4ade80;animation:blink 2s infinite;}
+.loc-dot.gps-searching{background:#fbbf24;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.btn-locate{background:rgba(79,195,247,.12);border:1px solid rgba(79,195,247,.3);color:var(--primary);padding:7px 14px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.btn-locate:hover{background:rgba(79,195,247,.22);}
+#map{width:100%;height:430px;}
+.shop-list-wrap{padding:14px 22px;border-top:1px solid var(--border);}
+.shop-list-label{font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;}
+.shop-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.shop-chip{display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:99px;border:1px solid var(--border);background:var(--card-bg,rgba(255,255,255,.04));font-size:.82rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.shop-chip:hover{border-color:var(--primary);background:rgba(79,195,247,.06);}
+.chip-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.chip-dot.active{background:#4ade80;}
+.chip-dot.busy{background:#fbbf24;}
+.chip-name{font-weight:600;}
+.chip-dist{color:var(--text-muted);}
+.no-shops-msg{color:var(--text-muted);font-size:.88rem;}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+@media(max-width:768px){.grid{grid-template-columns:1fr;}}
+.panel{background:var(--card-bg,rgba(255,255,255,.05));border:1px solid var(--border);border-radius:var(--radius);padding:28px;backdrop-filter:blur(12px);box-shadow:var(--shadow);animation:fadeUp .5s .2s ease both;}
+.panel-title{font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+.panel-title i{color:var(--primary);}
+
+/* FORM */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+@media(max-width:500px){.form-row{grid-template-columns:1fr;}}
+.field label{display:block;font-size:.8rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
+.field input,.field select,.field textarea{width:100%;padding:11px 14px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;color:var(--text,#fff);font-size:.9rem;outline:none;font-family:inherit;transition:border-color .2s;}
+[data-theme="light"] .field input,[data-theme="light"] .field select,[data-theme="light"] .field textarea{background:#f8fafc;color:#1f2937;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);}
+.field select option{background:#1f2937;}
+[data-theme="light"] .field select option{background:#fff;color:#1f2937;}
+.field textarea{resize:vertical;min-height:70px;}
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:14px;}
+.upload-zone:hover{border-color:var(--primary);background:rgba(79,195,247,.04);}
+.upload-zone i{font-size:2rem;color:var(--primary);margin-bottom:10px;}
+.upload-zone p{color:var(--text-muted);font-size:.88rem;}
+.upload-zone input{display:none;}
+.btn-submit{padding:12px 28px;background:linear-gradient(135deg,var(--primary),var(--accent));border:none;border-radius:10px;color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .2s;box-shadow:0 6px 20px rgba(30,64,175,.3);}
+.btn-submit:hover{transform:translateY(-1px);}
+
+/* ORDERS TABLE */
+.orders-table{width:100%;border-collapse:collapse;}
+.orders-table th{font-size:.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.orders-table td{padding:12px;border-bottom:1px solid var(--border);font-size:.88rem;vertical-align:middle;}
+.orders-table tr:last-child td{border-bottom:none;}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:.76rem;font-weight:600;}
+.badge.pending{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.25);}
+.badge.processing{background:rgba(79,195,247,.12);color:var(--primary);border:1px solid rgba(79,195,247,.25);}
+.badge.ready{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.25);}
+.badge.completed{background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.25);}
+.empty{text-align:center;color:var(--text-muted);padding:36px 0;font-size:.9rem;}
+.empty i{font-size:2rem;margin-bottom:10px;display:block;opacity:.4;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes ripple{0%{transform:scale(1);opacity:.6;}100%{transform:scale(2.4);opacity:0;}}
+
+/* LEAFLET POPUP DARK SKIN */
+.leaflet-popup-content-wrapper{
+  background:rgba(17,24,39,.96)!important;
+  border:1px solid rgba(79,195,247,.28)!important;
+  border-radius:14px!important;
+  box-shadow:0 16px 48px rgba(0,0,0,.6)!important;
+  backdrop-filter:blur(20px)!important;
+  color:#f1f5f9!important;
+  font-family:'DM Sans',sans-serif!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+[data-theme="light"] .leaflet-popup-content-wrapper{
+  background:rgba(255,255,255,.98)!important;
+  border-color:rgba(79,195,247,.4)!important;
+  color:#1f2937!important;
+}
+.leaflet-popup-content{margin:0!important;padding:0!important;width:auto!important;}
+.leaflet-popup-tip-container{margin-top:-1px;}
+.leaflet-popup-tip{background:rgba(17,24,39,.96)!important;}
+[data-theme="light"] .leaflet-popup-tip{background:#fff!important;}
+.leaflet-popup-close-button{color:#64748b!important;top:10px!important;right:12px!important;font-size:18px!important;z-index:10;}
+
+.pop{padding:18px 20px 16px;}
+.pop-shop-name{font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;margin-bottom:3px;}
+.pop-location{font-size:.8rem;color:#64748b;margin-bottom:12px;display:flex;align-items:center;gap:5px;}
+.pop-status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:.76rem;font-weight:700;margin-bottom:14px;}
+.pop-status-badge.active{background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3);}
+.pop-status-badge.busy{background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.3);}
+.pop-status-badge .sdot{width:6px;height:6px;border-radius:50%;animation:blink 1.5s infinite;}
+.pop-status-badge.active .sdot{background:#4ade80;}
+.pop-status-badge.busy .sdot{background:#fbbf24;}
+.pop-stats-row{display:flex;gap:16px;margin-bottom:14px;}
+.pop-stat{display:flex;flex-direction:column;gap:2px;}
+.pop-stat .lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.3px;color:#64748b;font-weight:600;}
+.pop-stat .val{font-size:.92rem;font-weight:700;}
+.pop-btn{width:100%;padding:9px;background:linear-gradient(135deg,#4fc3f7,#1e40af);border:none;border-radius:8px;color:#fff;font-size:.85rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.pop-btn:hover{opacity:.85;}
+
+/* ── PRICE GUIDE ── */
+.price-guide{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.price-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:99px;font-size:.76rem;font-weight:600;background:rgba(79,195,247,.08);border:1px solid rgba(79,195,247,.2);color:var(--primary);}
+.binding-check{display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer;font-size:.88rem;color:var(--text-muted);}
+.binding-check input[type=checkbox]{width:16px;height:16px;accent-color:var(--primary);cursor:pointer;}
+/* ── COST BOX ── */
+.cost-box{background:rgba(79,195,247,.06);border:1px solid rgba(79,195,247,.2);border-radius:12px;padding:16px 18px;margin-bottom:14px;}
+.cost-title{font-size:.78rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.cost-line{display:flex;justify-content:space-between;align-items:center;font-size:.84rem;margin-bottom:5px;}
+.cost-line .cl{color:var(--text-muted);}.cost-line .ca{font-weight:600;}
+.cost-divider{border:none;border-top:1px solid rgba(79,195,247,.2);margin:8px 0;}
+.cost-total-row{display:flex;justify-content:space-between;align-items:center;}
+.cost-total-row .ctl{font-family:'Sora',sans-serif;font-weight:700;}
+.cost-total-row .cta{font-family:'Sora',sans-serif;font-weight:800;font-size:1.15rem;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+/* ── PAYMENT MODAL ── */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.hidden{display:none;}
+.modal{background:var(--card-bg,rgba(17,27,45,.98));border:1px solid var(--border);border-radius:20px;padding:30px 26px;width:100%;max-width:430px;box-shadow:0 24px 80px rgba(0,0,0,.6);animation:slideUp .3s ease both;}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.modal-title{font-family:'Sora',sans-serif;font-size:1.05rem;font-weight:700;}
+.modal-close{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text-muted);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:.95rem;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.modal-close:hover{border-color:#f87171;color:#f87171;}
+/* Network banner */
+.net-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;margin-bottom:16px;font-size:.86rem;font-weight:600;border:1px solid var(--border);background:rgba(255,255,255,.04);}
+.net-banner.vodacom{background:rgba(231,0,11,.08);border-color:rgba(231,0,11,.3);color:#f87171;}
+.net-banner.yas{background:rgba(0,180,0,.08);border-color:rgba(0,180,0,.3);color:#4ade80;}
+.net-banner.airtel{background:rgba(229,0,35,.08);border-color:rgba(229,0,35,.3);color:#f87171;}
+.net-banner.halotel{background:rgba(255,165,0,.08);border-color:rgba(255,165,0,.3);color:#fbbf24;}
+.net-banner.ttcl{background:rgba(79,195,247,.08);border-color:rgba(79,195,247,.3);color:#4fc3f7;}
+.net-banner .nlogo{font-size:1.3rem;}
+/* Pay summary */
+.pay-sum{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;}
+[data-theme="light"] .pay-sum{background:#f8fafc;}
+.psr{display:flex;justify-content:space-between;font-size:.84rem;margin-bottom:5px;}
+.psr:last-child{border-top:1px solid var(--border);padding-top:8px;margin-top:5px;font-weight:700;font-size:.92rem;}
+.pay-ph-lbl{font-size:.76rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
+.pay-ph-disp{font-family:'Sora',sans-serif;font-weight:700;padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+[data-theme="light"] .pay-ph-disp{background:#f8fafc;}
+.pay-ph-disp i{color:var(--primary);}
+.stk-area{display:none;text-align:center;padding:18px 0;}
+.stk-spin{width:44px;height:44px;border:3px solid rgba(79,195,247,.2);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.stk-msg{font-size:.87rem;color:var(--text-muted);line-height:1.7;}
+.btn-pay{width:100%;padding:13px;background:linear-gradient(135deg,#4ade80,#16a34a);border:none;border-radius:10px;color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;transition:transform .15s;box-shadow:0 8px 24px rgba(22,163,74,.3);display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;}
+.btn-pay:hover{transform:translateY(-1px);}
+.pay-note{text-align:center;color:var(--text-muted);font-size:.75rem;margin-top:8px;}
+/* Orders pay button */
+.badge.paid{background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.25);}
+.badge.unpaid{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);}
+.btn-paynow{padding:5px 11px;background:linear-gradient(135deg,#4ade80,#16a34a);border:none;border-radius:7px;color:#fff;font-size:.76rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.btn-paynow:hover{opacity:.85;}
+/* ══ VENDOR AD BOARD ══ */
+.adboard-panel{background:var(--card-bg,rgba(255,255,255,.05));border:1px solid var(--border);border-radius:var(--radius);padding:28px;backdrop-filter:blur(12px);box-shadow:var(--shadow);margin-bottom:28px;animation:fadeUp .5s .18s ease both;}
+.adboard-title{font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.adboard-title i{color:#fbbf24;}
+.adboard-subtitle{font-size:.82rem;color:var(--text-muted);margin-bottom:18px;}
+.adboard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
+.ad-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;padding:18px;transition:all .22s;cursor:pointer;position:relative;overflow:hidden;}
+[data-theme="light"] .ad-card{background:#f8fafc;}
+.ad-card::before{content:'';position:absolute;inset:0;border-radius:14px;background:linear-gradient(135deg,rgba(79,195,247,.06),rgba(129,140,248,.06));opacity:0;transition:opacity .22s;}
+.ad-card:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,0,0,.22);}
+.ad-card:hover::before{opacity:1;}
+.ad-card.selected-shop-card{border-color:#4ade80;background:rgba(74,222,128,.06);}
+[data-theme="light"] .ad-card.selected-shop-card{background:rgba(74,222,128,.08);}
+.ad-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.ad-shop-name{font-family:'Sora',sans-serif;font-weight:700;font-size:.97rem;margin-bottom:3px;}
+.ad-location{font-size:.75rem;color:var(--text-muted);display:flex;align-items:center;gap:4px;}
+.ad-status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.ad-status-dot.active{background:#4ade80;box-shadow:0 0 7px #4ade80;animation:blink 2s infinite;}
+.ad-status-dot.busy{background:#fbbf24;box-shadow:0 0 7px #fbbf24;animation:blink 1s infinite;}
+.ad-prices{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.ad-price-row{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:8px;font-size:.82rem;}
+.ad-price-row.bw{background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.15);}
+.ad-price-row.color{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);}
+.ad-price-row.binding{background:rgba(129,140,248,.07);border:1px solid rgba(129,140,248,.2);}
+.ad-price-lbl{color:var(--text-muted);font-weight:500;display:flex;align-items:center;gap:5px;}
+.ad-price-val{font-weight:700;font-size:.9rem;}
+.ad-price-val.bw-val{color:#94a3b8;}
+.ad-price-val.color-val{color:#fbbf24;}
+.ad-price-val.binding-val{color:#818cf8;}
+.ad-choose-btn{width:100%;padding:9px;background:linear-gradient(135deg,var(--primary),var(--accent));border:none;border-radius:9px;color:#fff;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.ad-choose-btn:hover{opacity:.85;}
+.ad-choose-btn.chosen{background:linear-gradient(135deg,#4ade80,#16a34a);}
+.adboard-empty{text-align:center;color:var(--text-muted);padding:32px;font-size:.9rem;}
+.adboard-empty i{font-size:1.8rem;display:block;margin-bottom:10px;opacity:.4;}
+.ad-queue-badge{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:99px;padding:3px 9px;font-size:.7rem;font-weight:600;white-space:nowrap;}
+.ad-queue-badge.q-active{color:#4ade80;}
+.ad-queue-badge.q-busy{color:#fbbf24;}
+/* ── SUPPORT PANEL ── */
+.support-contacts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+@media(max-width:580px){.support-contacts{grid-template-columns:1fr;}}
+.contact-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text,#fff);transition:all .2s;}
+[data-theme="light"] .contact-card{background:#f8fafc;}
+.contact-card:hover{border-color:var(--primary);background:rgba(79,195,247,.05);}
+.cicon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0;}
+.cicon.phone{background:rgba(74,222,128,.12);color:#4ade80;}
+.cicon.whatsapp{background:rgba(74,222,128,.12);color:#4ade80;}
+.clabel{font-size:.72rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;}
+.cval{font-weight:700;font-size:.9rem;}
+.sup-ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:#4ade80;border-radius:10px;padding:12px 16px;font-size:.87rem;margin-top:14px;display:none;}
+.sup-field label{display:block;font-size:.8rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
+.sup-field select,.sup-field textarea{width:100%;padding:11px 14px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;color:var(--text,#fff);font-size:.9rem;outline:none;font-family:inherit;transition:border-color .2s;margin-bottom:14px;}
+[data-theme="light"] .sup-field select,[data-theme="light"] .sup-field textarea{background:#f8fafc;color:#1f2937;}
+.sup-field textarea{resize:vertical;min-height:90px;}
+</style>
+</head>
+<body>
+
+
+<!-- ══ PAYMENT MODAL ══ -->
+<div class="modal-overlay hidden" id="pay-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title"><i class="fas fa-mobile-screen-button" style="color:#4ade80;margin-right:8px"></i>Mobile Money Payment</div>
+      <button class="modal-close" onclick="closePayModal()">✕</button>
+    </div>
+    <div class="net-banner" id="net-banner"><span class="nlogo" id="net-logo">📱</span><span id="net-name">Detecting network…</span></div>
+    <div class="pay-sum" id="pay-sum"></div>
+    <div class="pay-ph-lbl">Payment Phone Number</div>
+    <div class="pay-ph-disp"><i class="fas fa-phone"></i><span id="pay-phone-val">—</span></div>
+    <div id="stk-idle">
+      <button class="btn-pay" onclick="triggerSTK()"><i class="fas fa-bolt"></i> Send USSD Push to My Phone</button>
+      <p class="pay-note">You will receive a prompt on your phone. Enter your PIN to confirm.</p>
+    </div>
+    <div class="stk-area" id="stk-waiting"><div class="stk-spin"></div><div class="stk-msg">Prompt sent to your phone!<br>Please enter your mobile money PIN to confirm payment.</div></div>
+    <div class="stk-area" id="stk-success"><div style="font-size:2.5rem;margin-bottom:10px">✅</div><div style="color:#4ade80;font-weight:700;font-family:'Sora',sans-serif;margin-bottom:6px">Payment Confirmed!</div><div class="stk-msg">Your order is now marked as paid and sent to the shop.</div></div>
+    <div class="stk-area" id="stk-fail"><div style="font-size:2.5rem;margin-bottom:10px">❌</div><div style="color:#f87171;font-weight:700;font-family:'Sora',sans-serif;margin-bottom:8px">Payment Failed or Cancelled</div><div class="stk-msg" style="margin-bottom:14px">Please try again. Need help? Call +255 626 730 085</div><button class="btn-pay" style="background:linear-gradient(135deg,var(--primary),var(--accent));" onclick="resetSTK()"><i class="fas fa-rotate-right"></i> Try Again</button></div>
+  </div>
+</div>
+
+<nav class="navbar">
+  <div class="nav-brand">FA Print</div>
+  <div class="nav-right">
+    <div class="nav-user">
+      <div class="avatar" id="av">S</div>
+      <span id="uname">Student</span>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-circle-half-stroke"></i></button>
+    <button class="logout-btn" onclick="logout()"><i class="fas fa-right-from-bracket"></i> Logout</button>
+  </div>
+</nav>
+
+<main class="main">
+
+  <div class="page-header">
+    <h1>👋 Welcome back, <span id="greet">Student</span>!</h1>
+    <p>Upload your documents and track your print orders in real time.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card"><div class="stat-label">Total Orders</div><div class="stat-val blue" id="s-total">0</div></div>
+    <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-val yellow" id="s-pending">0</div></div>
+    <div class="stat-card"><div class="stat-label">Ready to Pickup</div><div class="stat-val green" id="s-ready">0</div></div>
+    <div class="stat-card"><div class="stat-label">Completed</div><div class="stat-val purple" id="s-done">0</div></div>
+  </div>
+
+  <!-- ══ LIVE MAP ══ -->
+  <div class="map-panel">
+    <div class="map-header">
+      <div class="map-title">
+        <i class="fas fa-map-location-dot"></i>
+        Nearby Print Shops — Live Map
+      </div>
+      <div class="map-controls">
+        <div class="map-legend">
+          <div class="legend-item"><div class="legend-dot me-dot"></div>You</div>
+          <div class="legend-item"><div class="legend-dot active-dot"></div>Active</div>
+          <div class="legend-item"><div class="legend-dot busy-dot"></div>Busy</div>
+        </div>
+        <div class="loc-status">
+          <div class="loc-dot gps-searching" id="loc-dot"></div>
+          <span id="loc-text">Getting location…</span>
+        </div>
+        <button class="btn-locate" onclick="relocate()">
+          <i class="fas fa-crosshairs"></i> Re-centre
+        </button>
+      </div>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="shop-list-wrap">
+      <div class="shop-list-label">Shops near you — tap to zoom</div>
+      <div class="shop-chips" id="shop-chips">
+        <div class="no-shops-msg">Waiting for location…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ VENDOR ADVERT BOARD ══ -->
+  <div class="adboard-panel" id="adboard-panel">
+    <div class="adboard-title"><i class="fas fa-bullhorn"></i> 🖨️ Compare Print Shops — Choose the Best Deal!</div>
+    <div class="adboard-subtitle"><i class="fas fa-info-circle" style="margin-right:4px"></i>Each office sets their own printing rates. Compare prices below and click <strong>Print Here</strong> to auto-select that shop in the order form.</div>
+    <div class="adboard-grid" id="adboard-grid">
+      <div class="adboard-empty"><i class="fas fa-store-slash"></i>Loading print shops…</div>
+    </div>
+  </div>
+
+  <!-- UPLOAD + ORDERS -->
+  <div class="grid">
+    <div class="panel">
+      <div class="panel-title"><i class="fas fa-cloud-upload-alt"></i> New Print Job</div>
+      <!-- PRICE GUIDE — updates live based on selected shop -->
+      <div class="price-guide">
+        <div class="price-pill" id="pill-bw"><i class="fas fa-print"></i> B&amp;W: Tsh 150/p</div>
+        <div class="price-pill" id="pill-color"><i class="fas fa-palette"></i> Color: Tsh 250/p</div>
+        <div class="price-pill"><i class="fas fa-book"></i> Binding: Tsh 1,000</div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Document Title</label>
+          <input type="text" id="doc-title" placeholder="e.g. Assignment 3"/>
+        </div>
+        <div class="field">
+          <label>Number of Pages</label>
+          <input type="number" id="doc-pages" min="1" value="1" oninput="calcCost()"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Copies</label>
+          <input type="number" id="doc-copies" min="1" value="1" oninput="calcCost()"/>
+        </div>
+        <div class="field">
+          <label>Print Type</label>
+          <select id="doc-type" onchange="calcCost()">
+            <option value="bw">Black &amp; White</option>
+            <option value="color">Color</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Paper Size</label>
+          <select id="doc-size">
+            <option value="A4">A4</option>
+            <option value="A3">A3</option>
+            <option value="Letter">Letter</option>
+          </select>
+        </div>
+        <div class="field" style="display:flex;align-items:flex-end;padding-bottom:2px">
+          <label class="binding-check" style="margin-bottom:0">
+            <input type="checkbox" id="doc-binding" onchange="calcCost()"/> Add Binding (Tsh 1,000)
+          </label>
+        </div>
+      </div>
+      <!-- SELECT SHOP first — prices are shop-specific -->
+      <div class="field" style="margin-bottom:14px">
+        <label>Select Shop</label>
+        <select id="doc-shop"><option value="">Loading shops…</option></select>
+        <small style="color:var(--text-muted);font-size:.75rem;margin-top:5px;display:block"><i class="fas fa-info-circle"></i> Prices above update when you choose a shop</small>
+      </div>
+      <!-- AUTOMATIC COST CALCULATOR -->
+      <div class="cost-box">
+        <div class="cost-title"><i class="fas fa-calculator"></i> Automatic Cost Estimate</div>
+        <div class="cost-line"><span class="cl" id="c-pages-lbl">Pages × Copies × Rate</span><span class="ca" id="c-pages-amt">Tsh 0</span></div>
+        <div class="cost-line" id="c-bind-row" style="display:none"><span class="cl">Binding</span><span class="ca">Tsh 1,000</span></div>
+        <hr class="cost-divider"/>
+        <div class="cost-total-row"><span class="ctl">Total to Pay</span><span class="cta" id="c-total">Tsh 0</span></div>
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label>Notes (optional)</label>
+        <textarea id="doc-notes" placeholder="e.g. Staple all pages together…"></textarea>
+      </div>
+      <div class="upload-zone" onclick="document.getElementById('file-inp').click()">
+        <i class="fas fa-file-arrow-up"></i>
+        <p id="file-label">Click to upload your document (PDF, DOC, DOCX)</p>
+        <input type="file" id="file-inp" accept=".pdf,.doc,.docx" onchange="fileChosen(this)"/>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:2px;">
+        <button class="btn-submit" onclick="submitOrder()"><i class="fas fa-paper-plane"></i> Submit &amp; Pay Later</button>
+        <button class="btn-submit" style="background:linear-gradient(135deg,#4ade80,#16a34a);box-shadow:0 6px 20px rgba(22,163,74,.3);" onclick="submitAndPay()"><i class="fas fa-bolt"></i> Submit &amp; Pay Now</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title"><i class="fas fa-list-check"></i> My Orders</div>
+      <div id="orders-wrap">
+        <div class="empty"><i class="fas fa-inbox"></i>No orders yet. Submit your first print job!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SUPPORT & CONTACT PANEL ══ -->
+  <div class="panel" style="margin-top:24px">
+    <div class="panel-title"><i class="fas fa-headset"></i> Help &amp; Support — Contact Us</div>
+    <div class="support-contacts">
+      <a class="contact-card" href="tel:+255626730085">
+        <div class="cicon phone"><i class="fas fa-phone"></i></div>
+        <div><div class="clabel">Call Us Anytime</div><div class="cval">+255 626 730 085</div></div>
+      </a>
+      <a class="contact-card" href="https://wa.me/255626730085" target="_blank">
+        <div class="cicon whatsapp"><i class="fab fa-whatsapp"></i></div>
+        <div><div class="clabel">WhatsApp Support</div><div class="cval">+255 626 730 085</div></div>
+      </a>
+    </div>
+    <div class="sup-field">
+      <label>Issue Type</label>
+      <select id="sup-type">
+        <option value="">Select your issue…</option>
+        <option value="order">Problem with my order</option>
+        <option value="payment">Payment issue</option>
+        <option value="shop">Shop not responding</option>
+        <option value="account">Account / login problem</option>
+        <option value="map">Map / location issue</option>
+        <option value="other">Other enquiry</option>
+      </select>
+    </div>
+    <div class="sup-field">
+      <label>Your Message / Comment</label>
+      <textarea id="sup-msg" placeholder="Describe your issue, feedback, or question in detail…"></textarea>
+    </div>
+    <button class="btn-submit" onclick="sendSupport()"><i class="fas fa-paper-plane"></i> Send Message</button>
+    <div class="sup-ok" id="sup-ok">✅ Your message has been sent! Our team will reply to <strong id="sup-reply"></strong> within 24 hours. For urgent help call <strong>+255 626 730 085</strong>.</div>
+  </div>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* ── AUTH ── */
+const session = JSON.parse(localStorage.getItem('fa_session') || 'null');
+if (!session || session.role !== 'student') { window.location.href = 'fa_print_login.html'; }
+const getUsers  = () => JSON.parse(localStorage.getItem('fa_users')  || '[]');
+const getOrders = () => JSON.parse(localStorage.getItem('fa_orders') || '[]');
+const me = () => getUsers().find(u => u.id === session.id) || {};
+
+/* ── THEME ── */
+const savedTheme = localStorage.getItem('fa_theme') || 'dark';
+if (savedTheme === 'light') applyLight();
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  if (isLight) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('fa_theme','dark'); switchTile('dark'); }
+  else          { applyLight(); switchTile('light'); }
+}
+function applyLight() { document.documentElement.setAttribute('data-theme','light'); localStorage.setItem('fa_theme','light'); }
+function logout() { localStorage.removeItem('fa_session'); window.location.href = 'fa_print_login.html'; }
+
+/* ── UI INIT ── */
+document.getElementById('greet').textContent = session.name.split(' ')[0];
+document.getElementById('uname').textContent  = session.name.split(' ')[0];
+document.getElementById('av').textContent     = session.name[0].toUpperCase();
+
+/* ════════════════════════════════════
+   MAP
+════════════════════════════════════ */
+// CUoM Mbeya campus default
+const CAMPUS = [-8.9094, 33.4607];
+let map, tile, studentMarker;
+let shopMarkers = [];
+let myLat = null, myLng = null;
+
+function initMap(lat, lng) {
+  map = L.map('map', { center: [lat, lng], zoom: 16, zoomControl: true });
+  tile = addTile(savedTheme === 'light' ? 'light' : 'dark');
+  addStudentMarker(lat, lng);
+  drawShops(lat, lng);
+}
+
+function addTile(theme) {
+  const url = theme === 'light'
+    ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+  return L.tileLayer(url, { attribution:'&copy; <a href="https://carto.com">CARTO</a>', subdomains:'abcd', maxZoom:20 }).addTo(map);
+}
+
+function switchTile(theme) {
+  if (!map) return;
+  map.removeLayer(tile);
+  tile = addTile(theme);
+}
+
+function addStudentMarker(lat, lng) {
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="position:relative;width:26px;height:26px;">
+      <div style="position:absolute;inset:-12px;border-radius:50%;background:rgba(79,195,247,.15);animation:ripple 2s ease-out infinite;"></div>
+      <div style="position:absolute;inset:-6px;border-radius:50%;background:rgba(79,195,247,.12);animation:ripple 2s .6s ease-out infinite;"></div>
+      <div style="position:absolute;inset:0;border-radius:50%;background:#4fc3f7;border:3px solid #fff;box-shadow:0 0 16px rgba(79,195,247,.9);"></div>
+    </div>`,
+    iconSize: [26, 26], iconAnchor: [13, 13]
+  });
+  studentMarker = L.marker([lat, lng], { icon, zIndexOffset: 1000 })
+    .addTo(map)
+    .bindTooltip('📍 You are here', { direction: 'top', offset: [0, -16] });
+}
+
+/* How many active (non-completed) orders does a shop have right now? */
+function shopActiveJobs(vendorId) {
+  return getOrders().filter(o => o.shopId === vendorId && o.status !== 'completed').length;
+}
+
+/* Determine status: busy if 4+ active jobs, else active */
+function shopStatus(vendorId) {
+  return shopActiveJobs(vendorId) >= 4 ? 'busy' : 'active';
+}
+
+
+
+function haversine(la1, lo1, la2, lo2) {
+  const R = 6371000, d2r = Math.PI / 180;
+  const dLa = (la2-la1)*d2r, dLo = (lo2-lo1)*d2r;
+  const a = Math.sin(dLa/2)**2 + Math.cos(la1*d2r)*Math.cos(la2*d2r)*Math.sin(dLo/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+const fmtDist = m => m < 1000 ? Math.round(m)+'m' : (m/1000).toFixed(1)+'km';
+
+const SVC_LABELS = { bw:'B&W Only', color:'Color Only', both:'B&W + Color', full:'Full Service' };
+
+function drawShops(lat, lng) {
+  shopMarkers.forEach(m => map.removeLayer(m));
+  shopMarkers = [];
+
+  const vendors = getUsers().filter(u => u.role === 'vendor' && u.verified && u.status === 'approved');
+  const chips   = document.getElementById('shop-chips');
+
+  if (!vendors.length) {
+    chips.innerHTML = '<div class="no-shops-msg">No approved shops in the system yet.</div>';
+    return;
+  }
+
+  chips.innerHTML = '';
+
+  const items = vendors.map(v => {
+    const coords  = { lat: parseFloat(v.latitude), lng: parseFloat(v.longitude) };
+    const status  = shopStatus(v.id);
+    const jobs    = shopActiveJobs(v.id);
+    const dist    = haversine(lat, lng, coords.lat, coords.lng);
+    return { v, coords, status, jobs, dist };
+  }).sort((a, b) => a.dist - b.dist);
+
+  items.forEach(({ v, coords, status, jobs, dist }) => {
+    const isActive = status === 'active';
+    const color    = isActive ? '#4ade80' : '#fbbf24';
+    const glow     = isActive ? 'rgba(74,222,128,.9)' : 'rgba(251,191,36,.9)';
+    const rippleC  = isActive ? 'rgba(74,222,128,.18)' : 'rgba(251,191,36,.18)';
+
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="position:relative;width:34px;height:34px;cursor:pointer;">
+        <div style="position:absolute;inset:-10px;border-radius:50%;background:${rippleC};animation:ripple ${isActive?'2.5s':'1.2s'} ease-out infinite;"></div>
+        <div style="position:absolute;inset:0;border-radius:50%;background:${color};border:3px solid rgba(255,255,255,.95);box-shadow:0 0 16px ${glow};display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;">🖨</div>
+      </div>`,
+      iconSize: [34, 34], iconAnchor: [17, 17]
+    });
+
+    const popHtml = `
+      <div class="pop">
+        <div class="pop-shop-name">${v.shopname}</div>
+        <div class="pop-location"><i class="fas fa-location-dot" style="color:#4fc3f7"></i>${v.location || 'CUoM Campus'}</div>
+        <div class="pop-status-badge ${status}">
+          <span class="sdot"></span>${isActive ? '● Active — Ready' : '⚡ Busy — Queue forming'}
+        </div>
+        <div class="pop-stats-row">
+          <div class="pop-stat">
+            <span class="lbl">Distance</span>
+            <span class="val" style="color:#4fc3f7">${fmtDist(dist)}</span>
+          </div>
+          <div class="pop-stat">
+            <span class="lbl">Jobs in queue</span>
+            <span class="val" style="color:${isActive?'#4ade80':'#fbbf24'}">${jobs}</span>
+          </div>
+          <div class="pop-stat">
+            <span class="lbl">Services</span>
+            <span class="val">${SVC_LABELS[v.services] || v.services || '—'}</span>
+          </div>
+        </div>
+        <button class="pop-btn" onclick="selectShopFromMap('${v.id}','${v.shopname.replace(/'/g,'')}')">
+          <i class="fas fa-print"></i> Print at this shop
+        </button>
+      </div>`;
+
+    const marker = L.marker([coords.lat, coords.lng], { icon })
+      .addTo(map)
+      .bindPopup(popHtml, { maxWidth: 262, minWidth: 220, closeButton: true });
+
+    shopMarkers.push(marker);
+
+    // Chip row
+    const chip = document.createElement('div');
+    chip.className = 'shop-chip';
+    chip.innerHTML = `<span class="chip-dot ${status}"></span><span class="chip-name">${v.shopname}</span><span class="chip-dist">${fmtDist(dist)}</span>`;
+    chip.onclick = () => { map.flyTo([coords.lat, coords.lng], 17, { duration: 0.8 }); setTimeout(() => marker.openPopup(), 900); };
+    chips.appendChild(chip);
+  });
+}
+
+/* Called from popup button */
+function selectShopFromMap(vendorId, name) {
+  const sel = document.getElementById('doc-shop');
+  if (sel) {
+    if (!sel.querySelector(`option[value="${vendorId}"]`)) {
+      const o = document.createElement('option'); o.value = vendorId; o.textContent = name; sel.appendChild(o);
+    }
+    sel.value = vendorId;
+  }
+  calcCost();
+  // Sync ad board highlight
+  document.querySelectorAll('.ad-card').forEach(c => {
+    c.classList.remove('selected-shop-card');
+    const btn = c.querySelector('.ad-choose-btn');
+    if (btn) { btn.classList.remove('chosen'); btn.innerHTML = '<i class="fas fa-print"></i> Print Here'; }
+  });
+  const myCard = document.getElementById('adcard-' + vendorId);
+  if (myCard) {
+    myCard.classList.add('selected-shop-card');
+    const btn = myCard.querySelector('.ad-choose-btn');
+    if (btn) { btn.classList.add('chosen'); btn.innerHTML = '<i class="fas fa-check"></i> Selected ✓'; }
+  }
+  map.closePopup();
+  document.querySelector('.adboard-panel').scrollIntoView({ behavior: 'smooth' });
+  setTimeout(() => { document.querySelector('.grid').scrollIntoView({ behavior: 'smooth' }); }, 600);
+}
+
+/* ── GEOLOCATION ── */
+let watchId;
+function getLocation() {
+  const dot  = document.getElementById('loc-dot');
+  const txt  = document.getElementById('loc-text');
+  dot.className = 'loc-dot gps-searching';
+  txt.textContent = 'Getting location…';
+
+  if (!navigator.geolocation) { useCampus('Geolocation not supported'); return; }
+
+  watchId = navigator.geolocation.watchPosition(
+    pos => {
+      myLat = pos.coords.latitude;
+      myLng = pos.coords.longitude;
+      dot.className = 'loc-dot gps-active';
+      txt.textContent = 'Live GPS active';
+      if (!map) { initMap(myLat, myLng); }
+      else { studentMarker.setLatLng([myLat, myLng]); drawShops(myLat, myLng); }
+    },
+    err => { console.warn(err.message); useCampus('Location denied — using campus'); },
+    { enableHighAccuracy: true, maximumAge: 8000, timeout: 14000 }
+  );
+}
+
+function useCampus(msg) {
+  document.getElementById('loc-dot').className = 'loc-dot';
+  document.getElementById('loc-text').textContent = msg;
+  myLat = CAMPUS[0]; myLng = CAMPUS[1];
+  if (!map) initMap(myLat, myLng);
+}
+
+function relocate() {
+  if (map && myLat !== null) map.flyTo([myLat, myLng], 16, { duration: 1 });
+}
+
+/* ── SHOP DROPDOWN ── */
+function loadShops() {
+  const vendors = getUsers().filter(u => u.role === 'vendor' && u.verified && u.status === 'approved');
+  const sel = document.getElementById('doc-shop');
+  sel.innerHTML = '';
+  if (!vendors.length) { sel.innerHTML = '<option value="">No approved shops available</option>'; renderAdBoard([]); return; }
+  vendors.forEach(v => {
+    const o = document.createElement('option');
+    o.value = v.id;
+    o.textContent = v.shopname + (v.location ? ' — ' + v.location : '');
+    sel.appendChild(o);
+  });
+  renderAdBoard(vendors);
+}
+loadShops();
+
+/* ══ VENDOR AD BOARD ══ */
+function renderAdBoard(vendors) {
+  const grid = document.getElementById('adboard-grid');
+  const selectedShop = document.getElementById('doc-shop').value;
+  if (!vendors || !vendors.length) {
+    grid.innerHTML = '<div class="adboard-empty"><i class="fas fa-store-slash"></i>No approved print shops available yet.</div>';
+    return;
+  }
+  grid.innerHTML = vendors.map(v => {
+    const bw      = v.priceBW    || 150;
+    const color   = v.priceColor || 250;
+    const status  = shopStatus ? shopStatus(v.id) : 'active';
+    const jobs    = shopActiveJobs ? shopActiveJobs(v.id) : 0;
+    const isActive = status === 'active';
+    const isSelected = v.id === selectedShop;
+    return `<div class="ad-card${isSelected?' selected-shop-card':''}" id="adcard-${v.id}">
+      <div class="ad-card-top">
+        <div>
+          <div class="ad-shop-name">🖨️ ${v.shopname}</div>
+          <div class="ad-location"><i class="fas fa-location-dot"></i>${v.location || 'CUoM Campus'}</div>
+        </div>
+        <div>
+          <div class="ad-status-dot ${isActive?'active':'busy'}"></div>
+          <div class="ad-queue-badge ${isActive?'q-active':'q-busy'}" style="margin-top:4px">${isActive?'✓ Open':'⏳ Busy'}</div>
+        </div>
+      </div>
+      <div class="ad-prices">
+        <div class="ad-price-row bw">
+          <span class="ad-price-lbl"><i class="fas fa-print"></i> B&amp;W / page</span>
+          <span class="ad-price-val bw-val">Tsh ${bw.toLocaleString()}</span>
+        </div>
+        <div class="ad-price-row color">
+          <span class="ad-price-lbl"><i class="fas fa-palette"></i> Color / page</span>
+          <span class="ad-price-val color-val">Tsh ${color.toLocaleString()}</span>
+        </div>
+        <div class="ad-price-row binding">
+          <span class="ad-price-lbl"><i class="fas fa-book"></i> Binding</span>
+          <span class="ad-price-val binding-val">Tsh 1,000</span>
+        </div>
+      </div>
+      <div style="font-size:.72rem;color:var(--text-muted);margin-bottom:10px;text-align:center">
+        <i class="fas fa-layer-group" style="margin-right:3px"></i>${jobs} active job${jobs!==1?'s':''} in queue
+      </div>
+      <button class="ad-choose-btn${isSelected?' chosen':''}" onclick="selectShopFromAdBoard('${v.id}','${v.shopname.replace(/'/g,"\\'")}')">
+        <i class="fas fa-${isSelected?'check':'print'}"></i> ${isSelected?'Selected ✓':'Print Here'}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function selectShopFromAdBoard(vendorId, name) {
+  const sel = document.getElementById('doc-shop');
+  if (sel) {
+    if (!sel.querySelector(`option[value="${vendorId}"]`)) {
+      const o = document.createElement('option'); o.value = vendorId; o.textContent = name; sel.appendChild(o);
+    }
+    sel.value = vendorId;
+  }
+  calcCost();
+  // Update all ad cards visually
+  document.querySelectorAll('.ad-card').forEach(c => {
+    c.classList.remove('selected-shop-card');
+    const btn = c.querySelector('.ad-choose-btn');
+    if (btn) { btn.classList.remove('chosen'); btn.innerHTML = '<i class="fas fa-print"></i> Print Here'; }
+  });
+  const myCard = document.getElementById('adcard-' + vendorId);
+  if (myCard) {
+    myCard.classList.add('selected-shop-card');
+    const btn = myCard.querySelector('.ad-choose-btn');
+    if (btn) { btn.classList.add('chosen'); btn.innerHTML = '<i class="fas fa-check"></i> Selected ✓'; }
+    myCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  // Scroll to the order form
+  setTimeout(() => { document.querySelector('.grid').scrollIntoView({ behavior: 'smooth' }); }, 300);
+}
+
+// Recalculate cost and update price pills whenever a different shop is chosen
+document.getElementById('doc-shop').addEventListener('change', () => { calcCost(); });
+
+function fileChosen(inp) {
+  if (inp.files[0]) document.getElementById('file-label').textContent = '📎 ' + inp.files[0].name;
+}
+
+/* ── SUBMIT ORDER ── */
+function resetOrderForm() {
+  document.getElementById('doc-title').value  = '';
+  document.getElementById('doc-pages').value  = '1';
+  document.getElementById('doc-copies').value = '1';
+  document.getElementById('doc-notes').value  = '';
+  document.getElementById('doc-binding').checked = false;
+  document.getElementById('file-inp').value   = '';
+  document.getElementById('file-label').textContent = 'Click to upload your document (PDF, DOC, DOCX)';
+  calcCost();
+}
+
+function buildOrderData(file, fileData) {
+  const title   = document.getElementById('doc-title').value.trim();
+  const pages   = parseInt(document.getElementById('doc-pages').value) || 1;
+  const copies  = parseInt(document.getElementById('doc-copies').value) || 1;
+  const type    = document.getElementById('doc-type').value;
+  const size    = document.getElementById('doc-size').value;
+  const shop    = document.getElementById('doc-shop').value;
+  const notes   = document.getElementById('doc-notes').value.trim();
+  const binding = document.getElementById('doc-binding').checked;
+  const prices  = getShopPrices();
+  const rate    = type === 'bw' ? prices.bw : prices.color;
+  const total   = pages * copies * rate + (binding ? BINDING_PRICE : 0);
+  const all     = getUsers();
+  const order   = {
+    id: 'ORD_' + Date.now(), title, pages, copies, type, size, notes, binding,
+    fileName: file.name, fileSize: file.size,
+    fileData: fileData,          /* ← base64 content sent to vendor */
+    shopId: shop,
+    shopName: (all.find(u => u.id === shop) || {}).shopname || 'Unknown Shop',
+    totalAmount: total, paymentStatus: 'unpaid',
+    status: 'pending', createdAt: new Date().toISOString()
+  };
+  const idx = all.findIndex(u => u.id === session.id);
+  if (!all[idx].orders) all[idx].orders = [];
+  all[idx].orders.push(order);
+  const allOrders = getOrders();
+  allOrders.push({ ...order, studentId: session.id, studentName: session.name });
+  localStorage.setItem('fa_orders', JSON.stringify(allOrders));
+  localStorage.setItem('fa_users',  JSON.stringify(all));
+  return { order, total };
+}
+
+function validateForm() {
+  const title = document.getElementById('doc-title').value.trim();
+  const shop  = document.getElementById('doc-shop').value;
+  const file  = document.getElementById('file-inp').files[0];
+  if (!title || !shop) { alert('Please fill in document title and select a shop.'); return false; }
+  if (!file)           { alert('Please upload a document file.'); return false; }
+  return true;
+}
+
+function submitOrder() {
+  if (!validateForm()) return;
+  const file = document.getElementById('file-inp').files[0];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const result = buildOrderData(file, e.target.result);
+    resetOrderForm();
+    alert('✅ Print job submitted! Your document has been sent to the shop. You can pay from My Orders anytime.');
+    renderOrders(); updateStats();
+    if (map && myLat !== null) drawShops(myLat, myLng);
+  };
+  reader.onerror = function() { alert('Failed to read file. Please try again.'); };
+  reader.readAsDataURL(file);
+}
+
+function submitAndPay() {
+  if (!validateForm()) return;
+  const file = document.getElementById('file-inp').files[0];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const result = buildOrderData(file, e.target.result);
+    resetOrderForm();
+    renderOrders(); updateStats();
+    if (map && myLat !== null) drawShops(myLat, myLng);
+    openPayModal(result.order.id, result.total);
+  };
+  reader.onerror = function() { alert('Failed to read file. Please try again.'); };
+  reader.readAsDataURL(file);
+}
+
+/* ── ORDERS ── */
+function renderOrders() {
+  const user   = me();
+  const orders = (user.orders || []).slice().reverse();
+  const wrap   = document.getElementById('orders-wrap');
+  if (!orders.length) { wrap.innerHTML = '<div class="empty"><i class="fas fa-inbox"></i>No orders yet. Submit your first print job!</div>'; return; }
+  const allO = getOrders();
+  wrap.innerHTML = '<div style="overflow-x:auto"><table class="orders-table"><thead><tr><th>Title</th><th>Shop</th><th>Type</th><th>Amount</th><th>Status</th><th>Payment</th></tr></thead><tbody>' +
+    orders.map(o => {
+      const fresh = allO.find(a => a.id === o.id) || o;
+      const s = fresh.status; const ps = fresh.paymentStatus || 'unpaid';
+      return '<tr>' +
+        '<td><strong>' + fresh.title + '</strong><br><small style="color:var(--text-muted)">' + fresh.fileName + '</small></td>' +
+        '<td style="font-size:.84rem">' + fresh.shopName + '</td>' +
+        '<td><span class="badge ' + (fresh.type==='bw'?'processing':'ready') + '">' + (fresh.type==='bw'?'B&W':'Color') + '</span></td>' +
+        '<td style="font-weight:700;color:var(--primary)">Tsh ' + ((fresh.totalAmount||0).toLocaleString()) + '</td>' +
+        '<td><span class="badge ' + s + '">' + s.charAt(0).toUpperCase() + s.slice(1) + '</span></td>' +
+        '<td>' + (ps==='paid' ? '<span class="badge paid">✓ Paid</span>' : '<button class="btn-paynow" onclick="openPayModal(\'' + fresh.id + '\',' + (fresh.totalAmount||0) + ')"><i class="fas fa-bolt"></i> Pay</button>') + '</td>' +
+        '</tr>';
+    }).join('') + '</tbody></table></div>';
+}
+
+/* ── STATS ── */
+function updateStats() {
+  const orders = me().orders || [];
+  const allO   = getOrders();
+  const synced = orders.map(o => allO.find(a => a.id === o.id) || o);
+  document.getElementById('s-total').textContent   = synced.length;
+  document.getElementById('s-pending').textContent  = synced.filter(o => o.status === 'pending').length;
+  document.getElementById('s-ready').textContent    = synced.filter(o => o.status === 'ready').length;
+  document.getElementById('s-done').textContent     = synced.filter(o => o.status === 'completed').length;
+}
+
+function calculateCost() {
+    const paper = parseInt(document.getElementById('pages').value) || 0;
+    const type = document.getElementById('print-type').value;
+    const needsBinding = document.getElementById('binding').checked;
+    const prices = getShopPrices();
+    let rate = (type === 'bw') ? prices.bw : prices.color;
+    let total = (paper * rate) + (needsBinding ? BINDING_PRICE : 0);
+    document.getElementById('total-cost-display').textContent = `Total: Tsh ${total}/=`;
+    return total;
+}
+
+/* ════════════════════════════════════
+   COST CALCULATOR — uses vendor's custom prices
+════════════════════════════════════ */
+const BINDING_PRICE = 1000; // fixed, never changes
+
+function getShopPrices() {
+  const shopId = document.getElementById('doc-shop').value;
+  if (!shopId) return { bw: 150, color: 250, binding: BINDING_PRICE };
+  const vendor = getUsers().find(u => u.id === shopId);
+  return {
+    bw:      (vendor && vendor.priceBW)      ? vendor.priceBW      : 150,
+    color:   (vendor && vendor.priceColor)   ? vendor.priceColor   : 250,
+    binding: BINDING_PRICE
+  };
+}
+
+function calcCost() {
+  const paper   = parseInt(document.getElementById('doc-pages').value) || 0;
+  const copies  = parseInt(document.getElementById('doc-copies').value) || 1;
+  const type    = document.getElementById('doc-type').value;
+  const binding = document.getElementById('doc-binding').checked;
+  const prices  = getShopPrices();
+  const rate    = type === 'bw' ? prices.bw : prices.color;
+  const pc = paper * copies * rate;
+  const bc = binding ? prices.binding : 0;
+  const tot = pc + bc;
+  document.getElementById('c-pages-lbl').textContent = paper + 'p × ' + copies + ' cop × Tsh ' + rate;
+  document.getElementById('c-pages-amt').textContent = 'Tsh ' + pc.toLocaleString();
+  document.getElementById('c-bind-row').style.display = binding ? 'flex' : 'none';
+  document.getElementById('c-total').textContent = 'Tsh ' + tot.toLocaleString();
+
+  // Update price pills to reflect selected shop's rates
+  const pillBw    = document.getElementById('pill-bw');
+  const pillColor = document.getElementById('pill-color');
+  if (pillBw)    pillBw.innerHTML    = `<i class="fas fa-print"></i> B&W: Tsh ${prices.bw.toLocaleString()}/p`;
+  if (pillColor) pillColor.innerHTML = `<i class="fas fa-palette"></i> Color: Tsh ${prices.color.toLocaleString()}/p`;
+  return tot;
+}
+calcCost();
+
+/* ════════════════════════════════════
+   TZ NETWORK DETECTION
+════════════════════════════════════ */
+const TZ_NETS = {
+  vodacom: { pf:['074','075','076'], name:'Vodacom M-Pesa',  logo:'🔴', cls:'vodacom' },
+  yas:     { pf:['065','067'],       name:'Mixx by Yas',     logo:'🟢', cls:'yas'     },
+  airtel:  { pf:['078','068','069'], name:'Airtel Money',    logo:'🔴', cls:'airtel'  },
+  halotel: { pf:['062','061'],       name:'HaloPesa',        logo:'🟡', cls:'halotel' },
+  ttcl:    { pf:['073'],             name:'TTCL Pesa',       logo:'🔵', cls:'ttcl'    },
+};
+function detectNetwork(phone) {
+  const c = phone.replace(/\D/g,'');
+  const local = c.startsWith('255') ? '0' + c.slice(3) : c;
+  const pf = local.slice(0,3);
+  for (const [k,n] of Object.entries(TZ_NETS)) {
+    if (n.pf.includes(pf)) return { ...n, intl: c.startsWith('255') ? c : '255' + c.slice(1) };
+  }
+  return { name:'Unknown network', logo:'📱', cls:'unknown', intl: c };
+}
+
+/* ════════════════════════════════════
+   PAYMENT MODAL
+════════════════════════════════════ */
+let activeOrderId = null, activeTotal = 0;
+
+function openPayModal(orderId, total) {
+  activeOrderId = orderId; activeTotal = total; resetSTK();
+  const user = me(); const phone = user.phone || '';
+  const net  = detectNetwork(phone);
+  const bn   = document.getElementById('net-banner');
+  bn.className = 'net-banner ' + net.cls;
+  document.getElementById('net-logo').textContent = net.logo;
+  document.getElementById('net-name').textContent = net.name + (net.cls !== 'unknown' ? ' — USSD Push Ready' : ' — Network not detected');
+  document.getElementById('pay-phone-val').textContent = phone || 'No phone on account';
+  const allO = getOrders(); const ord = allO.find(o => o.id === orderId) || {};
+  document.getElementById('pay-sum').innerHTML =
+    '<div class="psr"><span>Document</span><span><strong>' + (ord.title||'—') + '</strong></span></div>' +
+    '<div class="psr"><span>Shop</span><span>' + (ord.shopName||'—') + '</span></div>' +
+    '<div class="psr"><span>Type</span><span>' + (ord.type==='bw'?'Black & White':'Color') + '</span></div>' +
+    '<div class="psr"><span>Pages × Copies</span><span>' + (ord.pages||'?') + ' × ' + (ord.copies||1) + '</span></div>' +
+    (ord.binding ? '<div class="psr"><span>Binding</span><span>Tsh 1,000</span></div>' : '') +
+    '<div class="psr"><span>Total</span><span style="color:#4ade80;font-weight:700">Tsh ' + total.toLocaleString() + '</span></div>';
+  document.getElementById('pay-modal').classList.remove('hidden');
+}
+function closePayModal() { document.getElementById('pay-modal').classList.add('hidden'); activeOrderId = null; }
+function resetSTK() {
+  document.getElementById('stk-idle').style.display = 'block';
+  ['stk-waiting','stk-success','stk-fail'].forEach(id => document.getElementById(id).style.display = 'none');
+}
+
+/*
+════════════════════════════════════════════════════════════════
+  TANZANIAN MOBILE MONEY — STK PUSH INTEGRATION (PHP BACKEND)
+════════════════════════════════════════════════════════════════
+
+── stk_push.php (PDO + cURL) ──────────────────────────────────
+<?php
+header('Content-Type: application/json');
+$pdo = new PDO('mysql:host=localhost;dbname=fa_print', $DB_USER, $DB_PASS,
+               [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+$body    = json_decode(file_get_contents('php://input'), true);
+$phone   = $body['phone'];    // e.g. 255741234567
+$amount  = $body['amount'];   // e.g. 1500
+$orderId = $body['order_id'];
+$network = $body['network'];  // vodacom | yas | airtel | halotel | ttcl
+
+// Selcom (covers all TZ networks via one gateway)
+$payload = json_encode([
+  'utilityref'   => $orderId,
+  'amount'       => $amount,
+  'msisdn'       => $phone,
+  'vendor'       => 'FA_PRINT',
+  'callback_url' => 'https://yourdomain.com/api/payment_callback.php',
+]);
+$ch = curl_init('https://apigw.selcommobile.com/v1/checkout/create-order');
+curl_setopt_array($ch, [
+  CURLOPT_POST           => true,
+  CURLOPT_POSTFIELDS     => $payload,
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_HTTPHEADER     => [
+    'Content-Type: application/json',
+    'Authorization: Bearer YOUR_SELCOM_API_KEY',
+  ],
+]);
+$res = json_decode(curl_exec($ch), true); curl_close($ch);
+
+// Log to DB
+$stmt = $pdo->prepare(
+  "INSERT INTO payment_logs (order_id, phone, amount, network, reference, status, created_at)
+   VALUES (?, ?, ?, ?, ?, 'pending', NOW())"
+);
+$stmt->execute([$orderId, $phone, $amount, $network, $res['reference'] ?? '']);
+echo json_encode(['ok' => true, 'reference' => $res['reference'] ?? '']);
+
+── payment_callback.php (Selcom POSTs here on completion) ──────
+<?php
+$pdo  = new PDO('mysql:host=localhost;dbname=fa_print', $DB_USER, $DB_PASS,
+                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+$body = json_decode(file_get_contents('php://input'), true);
+if (($body['status'] ?? '') === 'SUCCESSFUL') {
+  $pdo->prepare("UPDATE orders SET payment_status='paid', paid_at=NOW() WHERE id=?")
+      ->execute([$body['utilityref']]);
+  $pdo->prepare("UPDATE payment_logs SET status='paid' WHERE order_id=?")
+      ->execute([$body['utilityref']]);
+}
+http_response_code(200);
+════════════════════════════════════════════════════════════════
+*/
+function triggerSTK() {
+  const user = me(); const phone = user.phone || '';
+  if (!phone) { alert('No phone number on your account.'); return; }
+  const net = detectNetwork(phone);
+  if (net.cls === 'unknown') {
+    alert('Your phone number (' + phone + ') is not from a supported TZ network.\nSupported: Vodacom, Yas/Tigo, Airtel, Halotel, TTCL');
+    return;
+  }
+  document.getElementById('stk-idle').style.display = 'none';
+  document.getElementById('stk-waiting').style.display = 'block';
+
+  // REAL INTEGRATION: replace the setTimeout below with:
+  // fetch('/api/stk_push.php', {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify({ phone: net.intl, amount: activeTotal, order_id: activeOrderId, network: net.cls })
+  // }).then(r => r.json()).then(d => { if(d.ok) pollPaymentStatus(d.reference); else showFail(); });
+
+  // DEMO simulation (90% success)
+  setTimeout(() => {
+    const ok = Math.random() < 0.9;
+    document.getElementById('stk-waiting').style.display = 'none';
+    if (ok) {
+      document.getElementById('stk-success').style.display = 'block';
+      markOrderPaid(activeOrderId);
+      setTimeout(() => { closePayModal(); renderOrders(); }, 2500);
+    } else {
+      document.getElementById('stk-fail').style.display = 'block';
+    }
+  }, 3200);
+}
+function markOrderPaid(id) {
+  const all = getOrders(); const i = all.findIndex(o => o.id === id);
+  if (i > -1) { all[i].paymentStatus = 'paid'; all[i].paidAt = new Date().toISOString(); }
+  localStorage.setItem('fa_orders', JSON.stringify(all));
+  const users = getUsers();
+  users.forEach(u => { if (u.orders) { const oi = u.orders.findIndex(o => o.id === id); if (oi > -1) u.orders[oi].paymentStatus = 'paid'; }});
+  localStorage.setItem('fa_users', JSON.stringify(users));
+}
+
+/* ════════════════════════════════════
+   SUPPORT / HELP
+════════════════════════════════════ */
+function sendSupport() {
+  const type = document.getElementById('sup-type').value;
+  const msg  = document.getElementById('sup-msg').value.trim();
+  if (!type || !msg) { alert('Please select an issue type and write your message.'); return; }
+  const user = me();
+  const tickets = JSON.parse(localStorage.getItem('fa_support_tickets') || '[]');
+  tickets.push({ id:'TKT_'+Date.now(), studentId:session.id, studentName:user.name, email:user.email, phone:user.phone, type, msg, status:'open', createdAt:new Date().toISOString() });
+  localStorage.setItem('fa_support_tickets', JSON.stringify(tickets));
+  document.getElementById('sup-reply').textContent = user.email || user.phone || 'your contact';
+  document.getElementById('sup-ok').style.display = 'block';
+  document.getElementById('sup-type').value = '';
+  document.getElementById('sup-msg').value  = '';
+}
+
+/* ── BOOT ── */
+renderOrders();
+updateStats();
+getLocation();
+
+// Data refresh every 15s; map shop statuses every 25s
+setInterval(() => {
+  renderOrders(); updateStats();
+  const vendors = getUsers().filter(u => u.role === 'vendor' && u.verified && u.status === 'approved');
+  renderAdBoard(vendors);
+}, 15000);
+setInterval(() => { if (map && myLat !== null) drawShops(myLat, myLng); }, 25000);
+</script>
+</body>
+</html>

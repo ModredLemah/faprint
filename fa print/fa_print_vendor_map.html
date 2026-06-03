@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FA Print — Vendor Location Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+:root{--primary:#818cf8;--accent:#6d28d9;--dark:#1f2937;--border:rgba(255,255,255,.12);--text-muted:#94a3b8;--white:#ffffff;--shadow:0 8px 32px rgba(0,0,0,.25);--radius:14px;}
+[data-theme="light"]{--bg:#f0f4f8;--card-bg:#ffffff;--border:rgba(0,0,0,.08);--text:#1f2937;--text-muted:#64748b;--surface:#f8fafc;--shadow:0 4px 20px rgba(0,0,0,.08);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg,#1f2937);color:var(--text,#fff);min-height:100vh;transition:background .3s,color .3s;}
+.navbar{position:sticky;top:0;z-index:100;height:68px;background:rgba(31,41,55,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 5%;}
+[data-theme="light"] .navbar{background:rgba(255,255,255,.97);}
+.nav-brand{font-family:'Sora',sans-serif;font-weight:800;font-size:1.45rem;letter-spacing:-.5px;background:linear-gradient(90deg,#4fc3f7,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-user{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border:1px solid var(--border);padding:7px 14px;border-radius:99px;font-size:.88rem;}
+[data-theme="light"] .nav-user{background:#f0f4f8;}
+.nav-user .avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;}
+.theme-toggle{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text-muted);padding:8px 14px;border-radius:8px;font-size:.88rem;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;}
+.main{max-width:1400px;margin:0 auto;padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+@media(max-width:1000px){.main{grid-template-columns:1fr;}}
+.panel{background:var(--card-bg,rgba(255,255,255,.05));border:1px solid var(--border);border-radius:var(--radius);padding:24px;backdrop-filter:blur(12px);box-shadow:var(--shadow);}
+.panel-title{font-family:'Sora',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+.panel-title i{color:var(--primary);}
+#map{width:100%;height:500px;border-radius:12px;border:1px solid var(--border);}
+.map-controls{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.btn{padding:10px 18px;background:linear-gradient(135deg,var(--primary),var(--accent));border:none;border-radius:10px;color:#fff;font-size:.88rem;font-weight:700;cursor:pointer;transition:transform .15s;font-family:inherit;display:flex;align-items:center;gap:6px;}
+.btn:hover{transform:translateY(-1px);}
+.btn-secondary{background:rgba(129,140,248,.15);color:var(--primary);border:1px solid rgba(129,140,248,.3);}
+.btn-secondary:hover{background:rgba(129,140,248,.25);}
+.info-section{margin-bottom:20px;}
+.info-label{font-size:.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin-bottom:6px;}
+.info-val{font-size:.95rem;font-weight:500;background:rgba(255,255,255,.04);padding:10px 12px;border-radius:8px;border:1px solid var(--border);}
+.coord-display{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;}
+.coord-item{background:rgba(129,140,248,.08);border:1px solid rgba(129,140,248,.2);border-radius:8px;padding:10px;text-align:center;}
+.coord-item .label{font-size:.75rem;color:var(--text-muted);margin-bottom:4px;}
+.coord-item .value{font-family:'Courier New',monospace;font-size:.85rem;font-weight:600;color:var(--primary);}
+.status-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:#4ade80;padding:6px 12px;border-radius:99px;font-size:.8rem;font-weight:600;}
+.status-badge.pending{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.25);color:#fbbf24;}
+.success-msg{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:#4ade80;padding:10px 14px;border-radius:8px;font-size:.85rem;margin-top:12px;display:none;align-items:center;gap:8px;}
+.error-msg{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#f87171;padding:10px 14px;border-radius:8px;font-size:.85rem;margin-top:12px;display:none;align-items:center;gap:8px;}
+.leaflet-popup-content{font-family:'DM Sans',sans-serif !important;}
+.leaflet-popup-content-wrapper{background:var(--card-bg) !important;border:1px solid var(--border) !important;border-radius:12px !important;}
+.leaflet-popup-tip{background:var(--card-bg) !important;}
+.map-marker-popup{color:var(--text);font-size:.85rem;}
+.map-marker-popup .title{font-weight:700;margin-bottom:6px;color:var(--primary);}
+.map-marker-popup .detail{margin:4px 0;font-size:.8rem;}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-brand">FA Print</div>
+  <div class="nav-right">
+    <div class="nav-user"><div class="avatar" id="av">V</div><span id="uname">Vendor</span></div>
+    <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-circle-half-stroke"></i></button>
+    <button class="btn btn-secondary" onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</button>
+  </div>
+</nav>
+
+<main class="main">
+  <!-- Map Section -->
+  <div class="panel">
+    <div class="panel-title"><i class="fas fa-map"></i> Your Shop Location</div>
+    <div id="map"></div>
+    <div class="map-controls">
+      <button class="btn" onclick="getCurrentLocation()"><i class="fas fa-location-crosshairs"></i> Use My Location</button>
+      <button class="btn btn-secondary" onclick="useDefaultLocation()"><i class="fas fa-map-pin"></i> Use Campus</button>
+      <button class="btn btn-secondary" onclick="clearLocation()"><i class="fas fa-trash"></i> Clear</button>
+    </div>
+  </div>
+
+  <!-- Location Details Section -->
+  <div class="panel">
+    <div class="panel-title"><i class="fas fa-info-circle"></i> Location Details</div>
+    
+    <div class="info-section">
+      <div class="info-label">Shop Status</div>
+      <div class="status-badge" id="status-badge">
+        <span class="sdot"></span><span id="status-text">Not Set</span>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <div class="info-label">Current Coordinates</div>
+      <div class="coord-display">
+        <div class="coord-item">
+          <div class="label">Latitude</div>
+          <div class="value" id="lat-display">—</div>
+        </div>
+        <div class="coord-item">
+          <div class="label">Longitude</div>
+          <div class="value" id="lng-display">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <div class="info-label">Manual Coordinates (Optional)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div>
+          <label style="font-size:.75rem;color:var(--text-muted);display:block;margin-bottom:4px;">Latitude</label>
+          <input type="number" id="manual-lat" placeholder="e.g. -6.7924" step="0.0001" style="width:100%;padding:8px 12px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:inherit;font-family:inherit;outline:none;"/>
+        </div>
+        <div>
+          <label style="font-size:.75rem;color:var(--text-muted);display:block;margin-bottom:4px;">Longitude</label>
+          <input type="number" id="manual-lng" placeholder="e.g. 37.6662" step="0.0001" style="width:100%;padding:8px 12px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:inherit;font-family:inherit;outline:none;"/>
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="setManualCoordinates()"><i class="fas fa-check"></i> Apply Coordinates</button>
+    </div>
+
+    <div class="info-section">
+      <button class="btn" onclick="saveLocation()" style="width:100%;"><i class="fas fa-save"></i> Save Location</button>
+    </div>
+
+    <div class="success-msg" id="success-msg"><i class="fas fa-circle-check"></i> <span id="success-text">Location saved successfully!</span></div>
+    <div class="error-msg" id="error-msg"><i class="fas fa-circle-xmark"></i> <span id="error-text">Error saving location</span></div>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ── Theme ──
+const saved = localStorage.getItem('fa_theme') || 'dark';
+if (saved === 'light') applyLight();
+function toggleTheme() {
+  const c = document.documentElement.getAttribute('data-theme');
+  if (c === 'light') {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('fa_theme', 'dark');
+  } else {
+    applyLight();
+  }
+}
+function applyLight() {
+  document.documentElement.setAttribute('data-theme', 'light');
+  localStorage.setItem('fa_theme', 'light');
+}
+
+// ── Session ──
+const session = JSON.parse(localStorage.getItem('fa_session') || '{}');
+if (!session.id) {
+  alert('Please log in first');
+  window.location.href = 'fa_print_login.html';
+}
+
+const API_BASE = '/api';
+
+let user = {};
+
+async function loadUserData() {
+  const users = getUsers(); // Still using local storage for the full user list
+  user = users.find(u => u.id === session.id) || {};
+  // Fetch vendor specific data from backend if available
+  try {
+    const response = await fetch(`${API_BASE}/auth.php?action=get_vendor_details&user_id=${session.id}`);
+    const data = await response.json();
+    if (data.ok && data.vendor) {
+      user = { ...user, ...data.vendor }; // Merge vendor details
+    }
+  } catch (e) {
+    console.error("Failed to fetch vendor details:", e);
+  }
+
+  if (user.latitude && user.longitude) {
+    currentLat = parseFloat(user.latitude);
+    currentLng = parseFloat(user.longitude);
+  }
+  document.getElementById('uname').textContent = (user.shop_name || user.shopname || 'Vendor').split(' ')[0];
+  document.getElementById('av').textContent = (user.shop_name || user.shopname || 'V')[0].toUpperCase();
+  
+  initMap(currentLat || CAMPUS[0], currentLng || CAMPUS[1]);
+  updateDisplay();
+}
+
+loadUserData();
+
+function goBack() {
+  window.location.href = 'fa_print_vendor.html';
+}
+
+// ── Map ──
+const CAMPUS = [-6.7924, 37.6662]; // CUoM Campus coordinates
+let map, marker, currentLat = null, currentLng = null;
+
+function initMap(lat = CAMPUS[0], lng = CAMPUS[1]) {
+  if (map) map.remove();
+  map = L.map('map').setView([lat, lng], 16);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(map);
+
+  if (currentLat && currentLng) {
+    addMarker(currentLat, currentLng);
+  }
+}
+
+function addMarker(lat, lng) {
+  if (marker) map.removeLayer(marker);
+  marker = L.marker([lat, lng], {
+    draggable: true,
+    icon: L.icon({
+      iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDMyIDQwIj48cGF0aCBmaWxsPSIjODE4Y2Y4IiBkPSJNMTYgMEMxMC40NzcgMCA2IDQuNDc3IDYgMTBjMCA2IDE2IDMwIDE2IDMwczEwLTI0IDEwLTMwYzAtNS41MjMtNC40NzctMTAtMTAtMTB6TTEwIDE2aDEydi0xMkgxMHYxMnoiLz48L3N2Zz4=',
+      iconSize: [32, 40],
+      iconAnchor: [16, 40],
+      popupAnchor: [0, -40]
+    })
+  }).addTo(map);
+
+  marker.on('dragend', function() {
+    const pos = marker.getLatLng();
+    currentLat = pos.lat;
+    currentLng = pos.lng;
+    updateDisplay();
+  });
+
+  currentLat = lat;
+  currentLng = lng;
+  updateDisplay();
+}
+
+function updateDisplay() {
+  document.getElementById('lat-display').textContent = currentLat ? currentLat.toFixed(6) : '—';
+  document.getElementById('lng-display').textContent = currentLng ? currentLng.toFixed(6) : '—';
+  document.getElementById('manual-lat').value = currentLat ? currentLat.toFixed(6) : '';
+  document.getElementById('manual-lng').value = currentLng ? currentLng.toFixed(6) : '';
+  
+  if (currentLat && currentLng) {
+    document.getElementById('status-badge').className = 'status-badge';
+    document.getElementById('status-text').textContent = 'Location Set';
+  } else {
+    document.getElementById('status-badge').className = 'status-badge pending';
+    document.getElementById('status-text').textContent = 'Not Set';
+  }
+}
+
+function getCurrentLocation() {
+  if (!navigator.geolocation) {
+    showError('Geolocation not supported');
+    return;
+  }
+  const dot = document.querySelector('.panel-title i');
+  dot.style.animation = 'spin 1s linear infinite';
+  
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      dot.style.animation = '';
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      if (!map) initMap(lat, lng);
+      else map.flyTo([lat, lng], 16);
+      addMarker(lat, lng);
+      showSuccess('Location acquired from GPS');
+    },
+    err => {
+      dot.style.animation = '';
+      showError('Could not get location: ' + err.message);
+    }
+  );
+}
+
+function useDefaultLocation() {
+  if (!map) initMap(CAMPUS[0], CAMPUS[1]);
+  else map.flyTo(CAMPUS, 16);
+  addMarker(CAMPUS[0], CAMPUS[1]);
+  showSuccess('Using CUoM Campus location');
+}
+
+function clearLocation() {
+  if (marker) map.removeLayer(marker);
+  currentLat = null;
+  currentLng = null;
+  updateDisplay();
+  showSuccess('Location cleared');
+}
+
+function setManualCoordinates() {
+  const lat = parseFloat(document.getElementById('manual-lat').value);
+  const lng = parseFloat(document.getElementById('manual-lng').value);
+  
+  if (isNaN(lat) || isNaN(lng)) {
+    showError('Please enter valid coordinates');
+    return;
+  }
+  
+  if (lat < -90 || lat > 90) {
+    showError('Latitude must be between -90 and 90');
+    return;
+  }
+  
+  if (lng < -180 || lng > 180) {
+    showError('Longitude must be between -180 and 180');
+    return;
+  }
+  
+  if (!map) initMap(lat, lng);
+  else map.flyTo([lat, lng], 16);
+  addMarker(lat, lng);
+  showSuccess('Coordinates applied');
+}
+
+async function saveLocation() {
+  if (!currentLat || !currentLng) {
+    showError("Please set a location first");
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE}/auth.php?action=update_vendor_location`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: session.id,
+        latitude: currentLat,
+        longitude: currentLng
+      })
+    });
+    const data = await response.json();
+    if (data.ok) {
+      showSuccess("Location saved successfully!");
+      // Update local storage for immediate UI consistency
+      const users = getUsers();
+      const idx = users.findIndex(u => u.id === session.id);
+      if (idx > -1) {
+        users[idx].mapLat = currentLat;
+        users[idx].mapLng = currentLng;
+        localStorage.setItem("fa_users", JSON.stringify(users));
+      }
+    } else {
+      showError(data.error || "Failed to save location");
+    }
+  } catch (e) {
+    showError("Network error: " + e.message);
+  }
+}
+
+function showSuccess(msg) {
+  const el = document.getElementById('success-msg');
+  document.getElementById('success-text').textContent = msg;
+  el.style.display = 'flex';
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  document.getElementById('error-text').textContent = msg;
+  el.style.display = 'flex';
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+// Load saved location
+if (user.mapLat && user.mapLng) {
+  currentLat = user.mapLat;
+  currentLng = user.mapLng;
+}
+
+initMap(currentLat || CAMPUS[0], currentLng || CAMPUS[1]);
+updateDisplay();
+
+// Add spin animation
+const style = document.createElement('style');
+style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+document.head.appendChild(style);
+</script>
+</body>
+</html>
