@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FA Print — Document Inbox</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<style>
+:root{
+  --primary:#818cf8;--accent:#6d28d9;
+  --green:#4ade80;--yellow:#fbbf24;--red:#f87171;--cyan:#4fc3f7;
+  --border:rgba(255,255,255,.11);--text-muted:#94a3b8;
+  --radius:14px;--shadow:0 8px 32px rgba(0,0,0,.28);
+}
+[data-theme="light"]{
+  --bg:#f0f4f8;--card-bg:#fff;--border:rgba(0,0,0,.08);
+  --text:#1f2937;--text-muted:#64748b;--shadow:0 4px 20px rgba(0,0,0,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg,#111827);
+  color:var(--text,#f1f5f9);
+  min-height:100vh;
+  transition:background .3s,color .3s;
+}
+
+/* ── HEADER ── */
+.inbox-header{
+  background:rgba(17,24,39,.97);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:18px 28px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;
+  position:sticky;top:0;z-index:100;
+}
+[data-theme="light"] .inbox-header{background:rgba(255,255,255,.97);}
+.inbox-title{
+  font-family:'Sora',sans-serif;font-size:1.25rem;font-weight:800;
+  background:linear-gradient(90deg,var(--primary),var(--cyan));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  display:flex;align-items:center;gap:10px;
+}
+.inbox-title i{font-size:1.1rem;}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.badge-count{
+  background:rgba(129,140,248,.15);border:1px solid rgba(129,140,248,.3);
+  color:var(--primary);padding:5px 14px;border-radius:99px;font-size:.82rem;font-weight:700;
+}
+.btn-refresh{
+  background:rgba(255,255,255,.06);border:1px solid var(--border);
+  color:var(--text-muted);padding:8px 16px;border-radius:9px;font-size:.84rem;
+  cursor:pointer;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px;
+}
+.btn-refresh:hover{border-color:var(--primary);color:var(--primary);}
+.btn-refresh.spinning i{animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.theme-btn{
+  background:rgba(255,255,255,.06);border:1px solid var(--border);
+  color:var(--text-muted);padding:8px 12px;border-radius:9px;font-size:.84rem;
+  cursor:pointer;font-family:inherit;transition:all .2s;
+}
+
+/* ── FILTERS ── */
+.filters{
+  padding:16px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  border-bottom:1px solid var(--border);
+  background:var(--card-bg,rgba(255,255,255,.02));
+}
+.filter-label{font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-right:4px;}
+.filter-chip{
+  padding:6px 14px;border-radius:99px;border:1px solid var(--border);
+  background:transparent;color:var(--text-muted);font-size:.8rem;font-weight:600;
+  cursor:pointer;font-family:inherit;transition:all .2s;
+}
+.filter-chip.active{background:rgba(129,140,248,.15);border-color:rgba(129,140,248,.4);color:var(--primary);}
+.filter-chip:hover:not(.active){border-color:var(--primary);color:var(--text,#fff);}
+.search-box{
+  margin-left:auto;position:relative;display:flex;align-items:center;
+}
+.search-box i{position:absolute;left:12px;color:var(--text-muted);font-size:.85rem;pointer-events:none;}
+.search-box input{
+  padding:8px 14px 8px 34px;border-radius:9px;border:1px solid var(--border);
+  background:rgba(255,255,255,.05);color:var(--text,#fff);font-size:.85rem;
+  font-family:inherit;outline:none;width:220px;transition:border-color .2s;
+}
+[data-theme="light"] .search-box input{background:#f8fafc;color:#1f2937;}
+.search-box input:focus{border-color:var(--primary);}
+
+/* ── MAIN ── */
+.main{max-width:1240px;margin:0 auto;padding:28px 24px;}
+
+/* ── STATS ROW ── */
+.inbox-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:28px;}
+.istat{
+  background:var(--card-bg,rgba(255,255,255,.04));border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;backdrop-filter:blur(12px);box-shadow:var(--shadow);
+  animation:fadeUp .4s ease both;
+}
+.istat-lbl{font-size:.76rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;}
+.istat-val{font-family:'Sora',sans-serif;font-size:2rem;font-weight:800;line-height:1;}
+.col-purple{background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.col-yellow{background:linear-gradient(135deg,#fbbf24,#d97706);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.col-cyan  {background:linear-gradient(135deg,var(--cyan),#1e40af);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.col-green {background:linear-gradient(135deg,var(--green),#16a34a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+
+/* ── DOCUMENT CARDS ── */
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;}
+@media(max-width:680px){.doc-grid{grid-template-columns:1fr;}}
+
+.doc-card{
+  background:var(--card-bg,rgba(255,255,255,.04));
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:0;overflow:hidden;box-shadow:var(--shadow);
+  animation:fadeUp .4s ease both;transition:transform .2s,box-shadow .2s;
+}
+.doc-card:hover{transform:translateY(-2px);box-shadow:0 16px 48px rgba(0,0,0,.35);}
+.doc-card.status-pending  {border-left:4px solid var(--yellow);}
+.doc-card.status-downloaded{border-left:4px solid var(--cyan);}
+.doc-card.status-printed  {border-left:4px solid var(--green);}
+.doc-card.status-cancelled{border-left:4px solid var(--red);}
+
+.card-top{padding:18px 20px 14px;border-bottom:1px solid var(--border);}
+.card-top-row{display:flex;align-items:flex-start;gap:14px;}
+.file-icon{
+  width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;flex-shrink:0;
+}
+.file-icon.pdf  {background:rgba(239,68,68,.12);color:#f87171;}
+.file-icon.doc  {background:rgba(79,195,247,.12);color:var(--cyan);}
+.file-icon.docx {background:rgba(79,195,247,.12);color:var(--cyan);}
+.file-icon.xls  {background:rgba(74,222,128,.12);color:var(--green);}
+.file-icon.xlsx {background:rgba(74,222,128,.12);color:var(--green);}
+.file-icon.ppt  {background:rgba(251,191,36,.12);color:var(--yellow);}
+.file-icon.pptx {background:rgba(251,191,36,.12);color:var(--yellow);}
+.file-icon.img  {background:rgba(129,140,248,.12);color:var(--primary);}
+.file-icon.txt  {background:rgba(148,163,184,.12);color:var(--text-muted);}
+
+.card-meta{flex:1;min-width:0;}
+.card-filename{
+  font-family:'Sora',sans-serif;font-size:.9rem;font-weight:700;
+  margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.card-sub{color:var(--text-muted);font-size:.78rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.card-sub span{display:flex;align-items:center;gap:4px;}
+.status-badge{
+  display:inline-flex;align-items:center;gap:5px;padding:3px 10px;
+  border-radius:99px;font-size:.73rem;font-weight:700;margin-top:6px;
+}
+.status-badge.pending   {background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.3);}
+.status-badge.downloaded{background:rgba(79,195,247,.12); color:var(--cyan);  border:1px solid rgba(79,195,247,.3);}
+.status-badge.printed   {background:rgba(74,222,128,.12); color:var(--green); border:1px solid rgba(74,222,128,.3);}
+.status-badge.cancelled {background:rgba(239,68,68,.12);  color:var(--red);   border:1px solid rgba(239,68,68,.3);}
+.sdot{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;}
+
+.card-body{padding:14px 20px;}
+.card-info-row{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:12px;}
+.cinfo{display:flex;flex-direction:column;gap:2px;}
+.cinfo-lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.3px;color:var(--text-muted);font-weight:600;}
+.cinfo-val{font-size:.88rem;font-weight:600;}
+
+.print-opts{
+  background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:10px;padding:10px 14px;margin-bottom:12px;
+}
+[data-theme="light"] .print-opts{background:#f8fafc;}
+.print-opts-row{display:flex;gap:14px;flex-wrap:wrap;}
+.popt{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--text-muted);}
+.popt i{color:var(--primary);font-size:.85rem;}
+.popt strong{color:var(--text,#fff);}
+
+.notes-row{
+  font-size:.8rem;color:var(--text-muted);margin-bottom:12px;
+  padding:8px 12px;background:rgba(255,255,255,.03);border-radius:8px;
+  border-left:3px solid var(--primary);display:none;
+}
+[data-theme="light"] .notes-row{background:#f8fafc;}
+.notes-row.has-notes{display:block;}
+.notes-row strong{color:var(--text,#fff);}
+
+/* Payment indicator */
+.pay-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:99px;font-size:.73rem;font-weight:700;
+}
+.pay-chip.paid  {background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.3);}
+.pay-chip.unpaid{background:rgba(239,68,68,.1); color:var(--red);border:1px solid rgba(239,68,68,.2);}
+
+/* ── ACTION BUTTONS ── */
+.card-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.btn{
+  padding:8px 16px;border-radius:9px;font-size:.8rem;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .2s;border:1px solid transparent;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.btn-download{
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  border:none;color:#fff;box-shadow:0 4px 14px rgba(109,40,217,.3);flex:1;justify-content:center;
+}
+.btn-download:hover{opacity:.85;transform:translateY(-1px);}
+.btn-mark-printed{
+  background:rgba(74,222,128,.12);border-color:rgba(74,222,128,.3);color:var(--green);
+}
+.btn-mark-printed:hover{background:rgba(74,222,128,.22);}
+.btn-delete{
+  background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25);color:var(--red);
+}
+.btn-delete:hover{background:rgba(239,68,68,.2);}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
+
+/* ── EMPTY STATE ── */
+.empty-state{
+  text-align:center;padding:80px 20px;
+  color:var(--text-muted);animation:fadeUp .5s ease both;
+}
+.empty-state i{font-size:3rem;margin-bottom:16px;display:block;opacity:.3;}
+.empty-state h3{font-family:'Sora',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:8px;}
+.empty-state p{font-size:.88rem;}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:28px;right:28px;z-index:999;
+  padding:14px 20px;border-radius:12px;font-size:.88rem;font-weight:600;
+  display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.4);
+  animation:toastIn .3s ease;max-width:340px;
+}
+.toast.success{background:#14532d;border:1px solid rgba(74,222,128,.3);color:var(--green);}
+.toast.error  {background:#450a0a;border:1px solid rgba(239,68,68,.3); color:var(--red);}
+.toast.info   {background:#1e1b4b;border:1px solid rgba(129,140,248,.3);color:var(--primary);}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+
+/* ── LOADING SKELETON ── */
+.skeleton{
+  background:linear-gradient(90deg,rgba(255,255,255,.05) 25%,rgba(255,255,255,.1) 50%,rgba(255,255,255,.05) 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;
+}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+.sk-card{height:220px;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── UPLOAD PANEL (for student integration) ── */
+.upload-panel{
+  background:var(--card-bg,rgba(255,255,255,.04));border:1px solid var(--border);
+  border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);margin-bottom:28px;
+  animation:fadeUp .4s ease both;
+}
+.upload-panel-title{
+  font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;
+  margin-bottom:18px;display:flex;align-items:center;gap:8px;
+}
+.upload-panel-title i{color:var(--primary);}
+.drop-zone{
+  border:2px dashed var(--border);border-radius:12px;padding:36px 20px;
+  text-align:center;cursor:pointer;transition:all .2s;
+  background:rgba(255,255,255,.02);
+}
+.drop-zone.dragging{border-color:var(--primary);background:rgba(129,140,248,.06);}
+.drop-zone:hover{border-color:var(--primary);background:rgba(129,140,248,.04);}
+.drop-zone i{font-size:2.4rem;color:var(--primary);margin-bottom:12px;display:block;}
+.drop-zone p{color:var(--text-muted);font-size:.88rem;margin-bottom:8px;}
+.drop-zone .allowed{font-size:.76rem;color:var(--text-muted);opacity:.7;}
+.drop-zone input{display:none;}
+
+.file-queue{margin-top:14px;display:flex;flex-direction:column;gap:8px;}
+.fq-item{
+  display:flex;align-items:center;gap:12px;padding:10px 14px;
+  background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;
+}
+[data-theme="light"] .fq-item{background:#f8fafc;}
+.fq-item .fi{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.fq-item .fn{flex:1;font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fq-item .fs{font-size:.75rem;color:var(--text-muted);flex-shrink:0;}
+.fq-item .rm{background:none;border:none;color:var(--red);cursor:pointer;font-size:.9rem;padding:0 4px;flex-shrink:0;}
+
+.upload-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:14px;}
+.up-field label{display:block;font-size:.76rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;}
+.up-field select,.up-field input[type=number]{
+  width:100%;padding:9px 12px;background:rgba(255,255,255,.05);border:1px solid var(--border);
+  border-radius:9px;color:var(--text,#fff);font-size:.88rem;font-family:inherit;outline:none;transition:border-color .2s;
+}
+[data-theme="light"] .up-field select,[data-theme="light"] .up-field input{background:#f8fafc;color:#1f2937;}
+.up-field select:focus,.up-field input:focus{border-color:var(--primary);}
+.up-field select option{background:#1f2937;}
+[data-theme="light"] .up-field select option{background:#fff;color:#1f2937;}
+.binding-wrap{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.88rem;margin-top:20px;}
+.binding-wrap input{accent-color:var(--primary);width:16px;height:16px;}
+.notes-area{
+  width:100%;padding:10px 14px;margin-top:14px;
+  background:rgba(255,255,255,.05);border:1px solid var(--border);
+  border-radius:9px;color:var(--text,#fff);font-size:.88rem;font-family:inherit;
+  outline:none;resize:vertical;min-height:60px;transition:border-color .2s;
+}
+[data-theme="light"] .notes-area{background:#f8fafc;color:#1f2937;}
+.notes-area:focus{border-color:var(--primary);}
+.btn-upload-submit{
+  margin-top:16px;width:100%;padding:12px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  border:none;border-radius:10px;color:#fff;font-size:.95rem;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:transform .15s;
+  box-shadow:0 6px 20px rgba(109,40,217,.3);display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-upload-submit:hover{transform:translateY(-1px);}
+.btn-upload-submit:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.upload-progress{
+  margin-top:12px;height:6px;border-radius:99px;
+  background:rgba(255,255,255,.08);overflow:hidden;display:none;
+}
+.upload-progress-bar{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary),var(--accent));width:0%;transition:width .3s;}
+</style>
+</head>
+<body>
+
+<!-- ── TOAST ── -->
+<div id="toast" class="toast" style="display:none"></div>
+
+<!-- ── HEADER ── -->
+<div class="inbox-header">
+  <div class="inbox-title">
+    <i class="fas fa-inbox"></i>
+    Document Inbox
+  </div>
+  <div class="hdr-right">
+    <div class="badge-count" id="hdr-count">— pending</div>
+    <button class="btn-refresh" id="btn-refresh" onclick="loadDocs()">
+      <i class="fas fa-rotate-right"></i> Refresh
+    </button>
+    <button class="theme-btn" onclick="toggleTheme()"><i class="fas fa-circle-half-stroke"></i></button>
+  </div>
+</div>
+
+<!-- ── FILTERS ── -->
+<div class="filters">
+  <span class="filter-label">Filter:</span>
+  <button class="filter-chip active" data-status="" onclick="setFilter(this,'')">All</button>
+  <button class="filter-chip" data-status="pending"    onclick="setFilter(this,'pending')">
+    <i class="fas fa-clock" style="color:#fbbf24;font-size:.75rem"></i> Pending
+  </button>
+  <button class="filter-chip" data-status="downloaded" onclick="setFilter(this,'downloaded')">
+    <i class="fas fa-download" style="color:#4fc3f7;font-size:.75rem"></i> Downloaded
+  </button>
+  <button class="filter-chip" data-status="printed"    onclick="setFilter(this,'printed')">
+    <i class="fas fa-print" style="color:#4ade80;font-size:.75rem"></i> Printed
+  </button>
+  <div class="search-box">
+    <i class="fas fa-magnifying-glass"></i>
+    <input type="text" id="search-inp" placeholder="Search student or file…" oninput="renderCards()"/>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- Stats -->
+  <div class="inbox-stats">
+    <div class="istat"><div class="istat-lbl">Total Files</div><div class="istat-val col-purple" id="st-total">—</div></div>
+    <div class="istat"><div class="istat-lbl">Pending</div><div class="istat-val col-yellow" id="st-pending">—</div></div>
+    <div class="istat"><div class="istat-lbl">Downloaded</div><div class="istat-val col-cyan" id="st-down">—</div></div>
+    <div class="istat"><div class="istat-lbl">Printed</div><div class="istat-val col-green" id="st-printed">—</div></div>
+  </div>
+
+  <!-- ── STUDENT UPLOAD PANEL (embed in student dashboard or keep here for demo) ── -->
+  <div class="upload-panel" id="upload-demo" style="display:none">
+    <div class="upload-panel-title"><i class="fas fa-file-arrow-up"></i> Upload Documents for Printing</div>
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-inp').click()">
+      <input type="file" id="file-inp" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.txt" onchange="handleFileSelect(this.files)"/>
+      <i class="fas fa-cloud-arrow-up"></i>
+      <p>Drop files here or click to browse</p>
+      <div class="allowed">PDF, Word, Excel, PowerPoint, Images · Max 20 MB each</div>
+    </div>
+    <div class="file-queue" id="file-queue"></div>
+    <div class="upload-opts">
+      <div class="up-field">
+        <label>Copies</label>
+        <input type="number" id="up-copies" value="1" min="1" max="100"/>
+      </div>
+      <div class="up-field">
+        <label>Color Mode</label>
+        <select id="up-color">
+          <option value="bw">Black &amp; White</option>
+          <option value="color">Color</option>
+        </select>
+      </div>
+      <label class="binding-wrap">
+        <input type="checkbox" id="up-binding"/> Add Binding
+      </label>
+    </div>
+    <textarea class="notes-area" id="up-notes" placeholder="Special instructions (optional)…"></textarea>
+    <div class="upload-progress" id="up-progress"><div class="upload-progress-bar" id="up-bar"></div></div>
+    <button class="btn-upload-submit" id="btn-upload" onclick="uploadFiles()">
+      <i class="fas fa-paper-plane"></i> Send to Print Shop
+    </button>
+  </div>
+
+  <!-- Document Cards -->
+  <div class="doc-grid" id="doc-grid">
+    <!-- skeleton loaders -->
+    <div class="doc-card skeleton sk-card"></div>
+    <div class="doc-card skeleton sk-card"></div>
+    <div class="doc-card skeleton sk-card"></div>
+  </div>
+
+  <div class="empty-state" id="empty-state" style="display:none">
+    <i class="fas fa-inbox"></i>
+    <h3>No documents yet</h3>
+    <p>Student files will appear here once they submit a print order.</p>
+  </div>
+
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   CONFIG — update these to match your session / backend
+════════════════════════════════════════════════════════════ */
+const API_BASE   = '/api';
+const VENDOR_ID  = localStorage.getItem('fa_session')
+  ? JSON.parse(localStorage.getItem('fa_session')).id
+  : 'VENDOR_001'; // fallback for demo
+
+// DEMO MODE — set true to use mock data instead of real API
+const DEMO_MODE  = true;
+
+/* ════════════════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════════════════ */
+let allDocs      = [];
+let activeFilter = '';
+let autoRefresh;
+
+/* ════════════════════════════════════════════════════════════
+   MOCK DATA (demo only)
+════════════════════════════════════════════════════════════ */
+const MOCK_DOCS = [
+  {id:1,order_id:'ORD_001',student_id:'S1',original_name:'Assignment_3.pdf',mime_type:'application/pdf',file_size:1843200,copies:2,color_mode:'bw',binding:false,notes:'Please print double-sided.',status:'pending',payment_status:'paid',uploaded_at:'2025-05-14 08:22:10',student_name:'Amina Rashidi',student_phone:'255741234567',download_url:'#'},
+  {id:2,order_id:'ORD_001',student_id:'S1',original_name:'Cover_Page.docx',mime_type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',file_size:58400,copies:1,color_mode:'color',binding:false,notes:'',status:'pending',payment_status:'paid',uploaded_at:'2025-05-14 08:22:11',student_name:'Amina Rashidi',student_phone:'255741234567',download_url:'#'},
+  {id:3,order_id:'ORD_002',student_id:'S2',original_name:'Research_Presentation.pptx',mime_type:'application/vnd.openxmlformats-officedocument.presentationml.presentation',file_size:5242880,copies:1,color_mode:'color',binding:true,notes:'Bind with spiral binding please.',status:'downloaded',payment_status:'paid',uploaded_at:'2025-05-14 07:00:00',student_name:'Baraka Mwenda',student_phone:'255752345678',download_url:'#'},
+  {id:4,order_id:'ORD_003',student_id:'S3',original_name:'Financial_Report_Q1.xlsx',mime_type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',file_size:325600,copies:5,color_mode:'bw',binding:false,notes:'',status:'printed',payment_status:'paid',uploaded_at:'2025-05-13 15:30:00',student_name:'Cleophas Nkya',student_phone:'255762456789',download_url:'#'},
+  {id:5,order_id:'ORD_004',student_id:'S4',original_name:'Photo_ID.jpg',mime_type:'image/jpeg',file_size:420000,copies:3,color_mode:'color',binding:false,notes:'4x6 size please',status:'pending',payment_status:'unpaid',uploaded_at:'2025-05-14 09:10:00',student_name:'Dorcas Sikudhani',student_phone:'255773567890',download_url:'#'},
+];
+
+/* ════════════════════════════════════════════════════════════
+   LOAD DOCUMENTS
+════════════════════════════════════════════════════════════ */
+async function loadDocs() {
+  const btn = document.getElementById('btn-refresh');
+  btn.classList.add('spinning');
+
+  if (DEMO_MODE) {
+    await new Promise(r => setTimeout(r, 600));
+    allDocs = MOCK_DOCS;
+    btn.classList.remove('spinning');
+    updateStats();
+    renderCards();
+    return;
+  }
+
+  try {
+    const r = await fetch(`${API_BASE}/document_upload.php?action=list&vendor_id=${encodeURIComponent(VENDOR_ID)}`);
+    const d = await r.json();
+    if (d.ok) {
+      allDocs = d.documents;
+      updateStats();
+      renderCards();
+    } else {
+      showToast('error', d.error || 'Failed to load documents');
+    }
+  } catch(e) {
+    showToast('error', 'Network error loading documents');
+    console.error(e);
+  } finally {
+    btn.classList.remove('spinning');
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   STATS
+════════════════════════════════════════════════════════════ */
+function updateStats() {
+  document.getElementById('st-total').textContent   = allDocs.length;
+  document.getElementById('st-pending').textContent  = allDocs.filter(d=>d.status==='pending').length;
+  document.getElementById('st-down').textContent     = allDocs.filter(d=>d.status==='downloaded').length;
+  document.getElementById('st-printed').textContent  = allDocs.filter(d=>d.status==='printed').length;
+  const pending = allDocs.filter(d=>d.status==='pending').length;
+  document.getElementById('hdr-count').textContent   = pending + ' pending';
+}
+
+/* ════════════════════════════════════════════════════════════
+   RENDER CARDS
+════════════════════════════════════════════════════════════ */
+function renderCards() {
+  const q    = document.getElementById('search-inp').value.toLowerCase().trim();
+  const grid = document.getElementById('doc-grid');
+  const empty= document.getElementById('empty-state');
+
+  let docs = allDocs;
+  if (activeFilter) docs = docs.filter(d => d.status === activeFilter);
+  if (q) docs = docs.filter(d =>
+    d.original_name.toLowerCase().includes(q) ||
+    (d.student_name || '').toLowerCase().includes(q) ||
+    d.order_id.toLowerCase().includes(q)
+  );
+
+  if (!docs.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = docs.map((doc, i) => `
+    <div class="doc-card status-${doc.status}" style="animation-delay:${i*0.05}s">
+      <div class="card-top">
+        <div class="card-top-row">
+          <div class="file-icon ${fileIconClass(doc.mime_type)}">${fileIconHtml(doc.mime_type)}</div>
+          <div class="card-meta">
+            <div class="card-filename" title="${esc(doc.original_name)}">${esc(doc.original_name)}</div>
+            <div class="card-sub">
+              <span><i class="fas fa-user" style="color:var(--text-muted)"></i>${esc(doc.student_name||'Unknown')}</span>
+              <span><i class="fas fa-phone" style="color:var(--text-muted)"></i>${doc.student_phone||''}</span>
+            </div>
+            <div class="card-sub" style="margin-top:4px">
+              <span><i class="fas fa-tag" style="color:var(--text-muted)"></i>${doc.order_id}</span>
+              <span><i class="fas fa-clock" style="color:var(--text-muted)"></i>${fmtDate(doc.uploaded_at)}</span>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+              <span class="status-badge ${doc.status}">
+                <span class="sdot"></span>${doc.status.charAt(0).toUpperCase()+doc.status.slice(1)}
+              </span>
+              <span class="pay-chip ${doc.payment_status==='paid'?'paid':'unpaid'}">
+                <i class="fas fa-${doc.payment_status==='paid'?'circle-check':'circle-xmark'}"></i>
+                ${doc.payment_status==='paid'?'Paid':'Unpaid'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="card-info-row">
+          <div class="cinfo">
+            <div class="cinfo-lbl">File Size</div>
+            <div class="cinfo-val">${fmtSize(doc.file_size)}</div>
+          </div>
+          <div class="cinfo">
+            <div class="cinfo-lbl">Copies</div>
+            <div class="cinfo-val">${doc.copies}</div>
+          </div>
+          <div class="cinfo">
+            <div class="cinfo-lbl">Format</div>
+            <div class="cinfo-val">${doc.mime_type.split('/').pop().toUpperCase().replace('VND.OPENXMLFORMATS-OFFICEDOCUMENT.','').split('.')[0]}</div>
+          </div>
+        </div>
+
+        <div class="print-opts">
+          <div class="print-opts-row">
+            <div class="popt">
+              <i class="fas fa-${doc.color_mode==='color'?'palette':'circle-half-stroke'}"></i>
+              <strong>${doc.color_mode==='color'?'Color':'Black & White'}</strong>
+            </div>
+            <div class="popt">
+              <i class="fas fa-book"></i>
+              <strong>${doc.binding?'With Binding':'No Binding'}</strong>
+            </div>
+            <div class="popt">
+              <i class="fas fa-copy"></i>
+              <strong>${doc.copies} cop${doc.copies>1?'ies':'y'}</strong>
+            </div>
+          </div>
+        </div>
+
+        ${doc.notes
+          ? `<div class="notes-row has-notes"><strong><i class="fas fa-note-sticky"></i> Note:</strong> ${esc(doc.notes)}</div>`
+          : ''}
+
+        <div class="card-actions">
+          <button class="btn btn-download" onclick="downloadDoc(${doc.id}, '${esc(doc.original_name)}')">
+            <i class="fas fa-download"></i> Download
+          </button>
+          ${doc.status!=='printed'
+            ? `<button class="btn btn-mark-printed" onclick="markPrinted(${doc.id}, this)" title="Mark as printed">
+                <i class="fas fa-print"></i>
+               </button>`
+            : `<button class="btn btn-mark-printed" disabled>
+                <i class="fas fa-check"></i>
+               </button>`}
+          <button class="btn btn-delete" onclick="deleteDoc(${doc.id}, this)" title="Delete file">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ════════════════════════════════════════════════════════════
+   DOWNLOAD
+════════════════════════════════════════════════════════════ */
+async function downloadDoc(fileId, name) {
+  if (DEMO_MODE) {
+    showToast('info', `Demo: would download "${name}" from server`);
+    // Update local state
+    const idx = allDocs.findIndex(d=>d.id===fileId);
+    if (idx>-1 && allDocs[idx].status==='pending') {
+      allDocs[idx].status='downloaded';
+      updateStats(); renderCards();
+    }
+    return;
+  }
+  showToast('info', 'Preparing download…');
+  const url = `${API_BASE}/document_upload.php?action=download&file_id=${fileId}&vendor_id=${encodeURIComponent(VENDOR_ID)}`;
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => { loadDocs(); }, 1500);
+}
+
+/* ════════════════════════════════════════════════════════════
+   MARK PRINTED
+════════════════════════════════════════════════════════════ */
+async function markPrinted(fileId, btn) {
+  btn.disabled = true;
+  if (DEMO_MODE) {
+    await new Promise(r=>setTimeout(r,400));
+    const idx = allDocs.findIndex(d=>d.id===fileId);
+    if (idx>-1){ allDocs[idx].status='printed'; updateStats(); renderCards(); }
+    showToast('success','Marked as printed!');
+    return;
+  }
+  try {
+    const r = await fetch(`${API_BASE}/document_upload.php`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'delete', file_id:fileId, hard:false}),
+    });
+    const d = await r.json();
+    if (d.ok) { showToast('success','Marked as printed!'); loadDocs(); }
+    else       { showToast('error', d.error||'Failed'); btn.disabled=false; }
+  } catch(e) { showToast('error','Network error'); btn.disabled=false; }
+}
+
+/* ════════════════════════════════════════════════════════════
+   DELETE
+════════════════════════════════════════════════════════════ */
+async function deleteDoc(fileId, btn) {
+  if (!confirm('Permanently delete this file from the server?')) return;
+  btn.disabled = true;
+  if (DEMO_MODE) {
+    await new Promise(r=>setTimeout(r,300));
+    allDocs = allDocs.filter(d=>d.id!==fileId);
+    updateStats(); renderCards();
+    showToast('success','File deleted');
+    return;
+  }
+  try {
+    const r = await fetch(`${API_BASE}/document_upload.php`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'delete', file_id:fileId, hard:true}),
+    });
+    const d = await r.json();
+    if (d.ok) { showToast('success','File deleted'); loadDocs(); }
+    else       { showToast('error', d.error||'Failed'); btn.disabled=false; }
+  } catch(e) { showToast('error','Network error'); btn.disabled=false; }
+}
+
+/* ════════════════════════════════════════════════════════════
+   STUDENT UPLOAD (embed this in student dashboard)
+════════════════════════════════════════════════════════════ */
+let fileQueue = [];
+
+function handleFileSelect(files) {
+  for (const f of files) fileQueue.push(f);
+  renderQueue();
+}
+
+function renderQueue() {
+  const el = document.getElementById('file-queue');
+  el.innerHTML = fileQueue.map((f,i)=>`
+    <div class="fq-item">
+      <div class="fi ${fileIconClass(f.type)}" style="font-size:.9rem">${fileIconHtml(f.type)}</div>
+      <div class="fn">${esc(f.name)}</div>
+      <div class="fs">${fmtSize(f.size)}</div>
+      <button class="rm" onclick="removeFromQueue(${i})"><i class="fas fa-xmark"></i></button>
+    </div>
+  `).join('');
+}
+
+function removeFromQueue(i) { fileQueue.splice(i,1); renderQueue(); }
+
+async function uploadFiles() {
+  if (!fileQueue.length) { showToast('error','No files selected'); return; }
+  const btn = document.getElementById('btn-upload');
+  const bar = document.getElementById('up-bar');
+  const prg = document.getElementById('up-progress');
+  btn.disabled = true; prg.style.display='block';
+
+  if (DEMO_MODE) {
+    for (let p=0;p<=100;p+=10) { bar.style.width=p+'%'; await new Promise(r=>setTimeout(r,80)); }
+    showToast('success','Files sent to vendor inbox!');
+    const newDocs = fileQueue.map((f,i)=>({
+      id:Date.now()+i, order_id:'ORD_DEMO_'+Date.now(), student_id:'S_DEMO',
+      original_name:f.name, mime_type:f.type, file_size:f.size,
+      copies:+document.getElementById('up-copies').value,
+      color_mode:document.getElementById('up-color').value,
+      binding:document.getElementById('up-binding').checked,
+      notes:document.getElementById('up-notes').value,
+      status:'pending', payment_status:'paid',
+      uploaded_at:new Date().toISOString().replace('T',' ').slice(0,19),
+      student_name:'You (Demo)', student_phone:'255700000000', download_url:'#',
+    }));
+    allDocs = [...newDocs, ...allDocs];
+    fileQueue=[]; renderQueue(); updateStats(); renderCards();
+    btn.disabled=false; prg.style.display='none'; bar.style.width='0%';
+    return;
+  }
+
+  const fd = new FormData();
+  fd.append('action', 'upload');
+  fd.append('order_id',   'ORD_'+Date.now());
+  fd.append('student_id', 'STUDENT_ID_FROM_SESSION');
+  fd.append('vendor_id',  VENDOR_ID);
+  fd.append('copies',     document.getElementById('up-copies').value);
+  fd.append('color',      document.getElementById('up-color').value);
+  fd.append('binding',    document.getElementById('up-binding').checked?'1':'0');
+  fd.append('notes',      document.getElementById('up-notes').value);
+  for (const f of fileQueue) fd.append('files[]', f);
+
+  const xhr = new XMLHttpRequest();
+  xhr.upload.onprogress = e => { if(e.lengthComputable) bar.style.width=(e.loaded/e.total*100)+'%'; };
+  xhr.onload = () => {
+    const d = JSON.parse(xhr.responseText);
+    if (d.ok) {
+      showToast('success','Files uploaded successfully!');
+      fileQueue=[]; renderQueue(); loadDocs();
+    } else showToast('error', d.error||'Upload failed');
+    btn.disabled=false; prg.style.display='none'; bar.style.width='0%';
+  };
+  xhr.onerror = () => { showToast('error','Network error'); btn.disabled=false; prg.style.display='none'; };
+  xhr.open('POST', `${API_BASE}/document_upload.php`);
+  xhr.send(fd);
+}
+
+/* Drag-and-drop */
+const dz = document.getElementById('drop-zone');
+['dragenter','dragover'].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.add('dragging'); }));
+['dragleave','drop'].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.remove('dragging'); }));
+dz.addEventListener('drop', ev => { handleFileSelect(ev.dataTransfer.files); });
+
+/* ════════════════════════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════════════════════════ */
+function setFilter(el, status) {
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  activeFilter = status;
+  renderCards();
+}
+function toggleTheme() {
+  const t = document.body.getAttribute('data-theme')==='light'?null:'light';
+  if(t) document.body.setAttribute('data-theme','light');
+  else document.body.removeAttribute('data-theme');
+}
+function showToast(type, msg) {
+  const t = document.getElementById('toast');
+  const icons = {success:'circle-check',error:'circle-xmark',info:'circle-info'};
+  t.className='toast '+type;
+  t.innerHTML=`<i class="fas fa-${icons[type]||'circle-info'}"></i>${msg}`;
+  t.style.display='flex';
+  clearTimeout(t._tm);
+  t._tm = setTimeout(()=>{ t.style.display='none'; }, 3500);
+}
+function fmtSize(b) {
+  if (b >= 1048576) return (b/1048576).toFixed(1)+' MB';
+  if (b >= 1024)    return (b/1024).toFixed(0)+' KB';
+  return b+' B';
+}
+function fmtDate(str) {
+  if(!str) return '';
+  const d=new Date(str.replace(' ','T'));
+  return d.toLocaleString('en-TZ',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+function fileIconClass(mime) {
+  if (!mime) return 'txt';
+  if (mime==='application/pdf') return 'pdf';
+  if (mime.includes('word'))    return 'docx';
+  if (mime.includes('excel')||mime.includes('spreadsheet')) return 'xlsx';
+  if (mime.includes('powerpoint')||mime.includes('presentation')) return 'pptx';
+  if (mime.startsWith('image/')) return 'img';
+  return 'txt';
+}
+function fileIconHtml(mime) {
+  const cls = fileIconClass(mime);
+  const icons={pdf:'📄',docx:'📝',xlsx:'📊',pptx:'📑',img:'🖼️',txt:'📃'};
+  return icons[cls]||'📁';
+}
+
+/* ── BOOT ── */
+loadDocs();
+autoRefresh = setInterval(loadDocs, 30000); // auto-refresh every 30 s
+</script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FA Print — Vendor Registration</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<style>
+:root{--primary:#34d399;--accent:#065f46;--dark:#1f2937;--border:rgba(255,255,255,.12);--text-muted:#94a3b8;--white:#ffffff;--shadow:0 20px 60px rgba(0,0,0,.35);}
+[data-theme="light"]{--bg:#f0f4f8;--card-bg:#ffffff;--border:rgba(0,0,0,.1);--text:#1f2937;--text-muted:#64748b;--shadow:0 20px 60px rgba(0,0,0,.10);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg,#1f2937);color:var(--text,#fff);min-height:100vh;transition:background .3s,color .3s;}
+.navbar{position:sticky;top:0;z-index:100;height:68px;background:rgba(31,41,55,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 5%;}
+[data-theme="light"] .navbar{background:rgba(255,255,255,.95);}
+.nav-brand{font-family:'Sora',sans-serif;font-weight:800;font-size:1.45rem;letter-spacing:-.5px;background:linear-gradient(90deg,var(--primary),#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.theme-toggle{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text-muted);padding:8px 14px;border-radius:8px;font-size:.88rem;transition:all .2s;display:flex;align-items:center;gap:6px;cursor:pointer;}
+.theme-toggle:hover{color:var(--text,#fff);border-color:var(--primary);}
+.wrap{min-height:calc(100vh - 68px);display:flex;align-items:center;justify-content:center;padding:40px 20px;position:relative;overflow:hidden;}
+.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18;pointer-events:none;}
+.b1{width:500px;height:500px;background:#065f46;top:-100px;left:-150px;}
+.b2{width:400px;height:400px;background:var(--primary);bottom:-80px;right:-100px;}
+.card{background:var(--card-bg,rgba(255,255,255,.05));border:1px solid var(--border);border-radius:24px;padding:44px 40px;width:100%;max-width:480px;backdrop-filter:blur(20px);box-shadow:var(--shadow);position:relative;z-index:1;animation:fadeUp .6s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.logo{text-align:center;font-family:'Sora',sans-serif;font-weight:800;font-size:2rem;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.tagline{text-align:center;color:var(--text-muted);font-size:.88rem;margin-bottom:12px;}
+.type-badge{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.25);color:var(--primary);font-size:.82rem;font-weight:600;padding:6px 16px;border-radius:99px;width:fit-content;margin:0 auto 28px;}
+.title{font-family:'Sora',sans-serif;font-size:1.4rem;font-weight:700;margin-bottom:24px;}
+.field{margin-bottom:18px;position:relative;}
+.field label{display:flex;align-items:center;justify-content:space-between;font-size:.83rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;}
+.field label .char-count{font-size:.75rem;font-weight:500;letter-spacing:0;text-transform:none;color:var(--text-muted);}
+.field label .char-count.over{color:#ef4444;}
+.field input{width:100%;padding:13px 16px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;color:var(--text,#fff);font-size:.95rem;transition:border-color .2s,box-shadow .2s;outline:none;}
+[data-theme="light"] .field input{background:#f8fafc;color:#1f2937;}
+.field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(52,211,153,.15);}
+.field input.valid{border-color:#22c55e;}
+.field input.invalid{border-color:#ef4444;}
+.field input::placeholder{color:#4b5563;}
+[data-theme="light"] .field input::placeholder{color:#9ca3af;}
+.field-hint{font-size:.76rem;color:var(--text-muted);margin-top:5px;display:flex;align-items:center;gap:4px;}
+.field-hint.error-hint{color:#f87171;}
+.field-hint i{font-size:.7rem;}
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--primary),var(--accent));border:none;border-radius:10px;color:#fff;font-size:1rem;font-weight:700;letter-spacing:.3px;transition:transform .15s,box-shadow .2s;box-shadow:0 8px 24px rgba(6,95,70,.35);margin-top:4px;cursor:pointer;}
+.btn:hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(6,95,70,.45);}
+.switch{text-align:center;margin-top:20px;font-size:.9rem;color:var(--text-muted);}
+.switch a{color:var(--primary);font-weight:600;}
+.switch a:hover{text-decoration:underline;}
+.error{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#f87171;border-radius:8px;padding:10px 14px;font-size:.88rem;margin-bottom:16px;display:none;align-items:center;gap:8px;}
+.strength{height:4px;border-radius:99px;background:rgba(255,255,255,.1);margin-top:6px;overflow:hidden;}
+.strength-fill{height:100%;width:0;border-radius:99px;transition:width .3s,background .3s;}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="fa_print_landing.html" class="nav-brand">FA Print</a>
+  <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-circle-half-stroke"></i> <span id="tlabel">Light Mode</span></button>
+</nav>
+<div class="wrap">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="card">
+    <div class="logo">FA Print</div>
+    <div class="tagline">Far Fast Print — Your 24/7 Printing Bridge</div>
+    <div class="type-badge"><i class="fas fa-store"></i> Vendor Account</div>
+    <div class="title">Register Your Shop</div>
+    <div class="error" id="err"><i class="fas fa-circle-exclamation"></i> <span id="err-text"></span></div>
+
+    <!-- Full Name -->
+    <div class="field">
+      <label>Full Name <span class="char-count" id="vname-count">0/30</span></label>
+      <input type="text" id="vname" placeholder="e.g. John Mwangi" autocomplete="name"
+             maxlength="30" oninput="countChars('vname','vname-count',30)" onblur="validateVName()"/>
+      <div class="field-hint" id="vname-hint"><i class="fas fa-info-circle"></i> Maximum 30 characters</div>
+    </div>
+
+    <!-- Shop Name -->
+    <div class="field">
+      <label>Name of Shop <span class="char-count" id="shop-count">0/30</span></label>
+      <input type="text" id="shopname" placeholder="e.g. Mwangi Print Center" 
+             maxlength="30" oninput="countChars('shopname','shop-count',30)" onblur="validateShopName()"/>
+      <div class="field-hint" id="shop-hint"><i class="fas fa-info-circle"></i> Maximum 30 characters</div>
+    </div>
+
+    <!-- Email -->
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="vemail" placeholder="shop@example.com" autocomplete="email" onblur="validateVEmail()"/>
+      <div class="field-hint" id="vemail-hint"><i class="fas fa-info-circle"></i> Must contain name, @, domain and .com</div>
+    </div>
+
+    <!-- Phone: exactly 10 digits -->
+    <div class="field">
+      <label>Phone Number <span class="char-count" id="phone-count">0/10</span></label>
+      <input type="tel" id="vphone" placeholder="0712345678"
+             oninput="handlePhone(this)" onblur="validatePhone()"/>
+      <div class="field-hint" id="vphone-hint"><i class="fas fa-info-circle"></i> Exactly 10 digits, numbers only</div>
+    </div>
+
+    <!-- Password -->
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="vpass" placeholder="Create a password" oninput="checkStrength(this.value)"/>
+      <div class="strength"><div class="strength-fill" id="sfill"></div></div>
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="field">
+      <label>Confirm Password</label>
+      <input type="password" id="vpass2" placeholder="Repeat your password"/>
+    </div>
+
+    <button class="btn" onclick="registerVendor()">Register Shop</button>
+    <div class="switch">Already have an account? <a href="fa_print_login.html">Log in here</a></div>
+  </div>
+</div>
+<script>
+// ── Theme ──────────────────────────────────────────────
+const saved=localStorage.getItem('fa_theme')||'dark';
+if(saved==='light')applyLight();
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme');if(c==='light'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('fa_theme','dark');document.getElementById('tlabel').textContent='Light Mode';}else{applyLight();}}
+function applyLight(){document.documentElement.setAttribute('data-theme','light');localStorage.setItem('fa_theme','light');document.getElementById('tlabel').textContent='Dark Mode';}
+
+// ── Character counter ──────────────────────────────────
+function countChars(fieldId, countId, max){
+  const v=document.getElementById(fieldId).value;
+  const el=document.getElementById(countId);
+  el.textContent=v.length+'/'+max;
+  el.classList.toggle('over', v.length>=max);
+}
+
+// ── Field state helpers ────────────────────────────────
+function setFieldState(id, hintId, ok, msg){
+  const inp=document.getElementById(id);
+  const hint=document.getElementById(hintId);
+  inp.classList.toggle('valid', ok);
+  inp.classList.toggle('invalid', !ok);
+  hint.className='field-hint'+(ok?'':' error-hint');
+  hint.innerHTML=(ok?'<i class="fas fa-circle-check" style="color:#22c55e"></i>':'<i class="fas fa-circle-xmark"></i>')+' '+msg;
+}
+function clearFieldState(id, hintId, defaultMsg){
+  const inp=document.getElementById(id);
+  inp.classList.remove('valid','invalid');
+  const hint=document.getElementById(hintId);
+  hint.className='field-hint';
+  hint.innerHTML='<i class="fas fa-info-circle"></i> '+defaultMsg;
+}
+
+// ── Name validation (max 30) ───────────────────────────
+function validateVName(){
+  const v=document.getElementById('vname').value.trim();
+  if(!v){clearFieldState('vname','vname-hint','Maximum 30 characters');return false;}
+  if(v.length<2){setFieldState('vname','vname-hint',false,'Name is too short');return false;}
+  if(v.length>30){setFieldState('vname','vname-hint',false,'Name must not exceed 30 characters');return false;}
+  setFieldState('vname','vname-hint',true,'Looks good!');
+  return true;
+}
+
+// ── Shop name validation (max 30) ─────────────────────
+function validateShopName(){
+  const v=document.getElementById('shopname').value.trim();
+  if(!v){clearFieldState('shopname','shop-hint','Maximum 30 characters');return false;}
+  if(v.length<2){setFieldState('shopname','shop-hint',false,'Shop name is too short');return false;}
+  if(v.length>30){setFieldState('shopname','shop-hint',false,'Shop name must not exceed 30 characters');return false;}
+  setFieldState('shopname','shop-hint',true,'Looks good!');
+  return true;
+}
+
+// ── Email validation (.com required) ──────────────────
+const EMAIL_RE=/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.com$/;
+function validateVEmail(){
+  const v=document.getElementById('vemail').value.trim();
+  if(!v){clearFieldState('vemail','vemail-hint','Must contain name, @, domain and .com');return false;}
+  if(!EMAIL_RE.test(v)){
+    setFieldState('vemail','vemail-hint',false,'Invalid email. Must include name, @, domain name and end with .com');
+    return false;
+  }
+  setFieldState('vemail','vemail-hint',true,'Valid email address');
+  return true;
+}
+
+// ── Phone: exactly 10 digits ───────────────────────────
+function handlePhone(inp){
+  // Strip non-digits
+  inp.value=inp.value.replace(/\D/g,'');
+  // Enforce max 10
+  if(inp.value.length>10) inp.value=inp.value.slice(0,10);
+  const el=document.getElementById('phone-count');
+  el.textContent=inp.value.length+'/10';
+  el.classList.toggle('over', inp.value.length===10);
+}
+function validatePhone(){
+  const v=document.getElementById('vphone').value;
+  if(v.length===0){clearFieldState('vphone','vphone-hint','Exactly 10 digits, numbers only');return false;}
+  if(v.length!==10){
+    setFieldState('vphone','vphone-hint',false,'Phone number must be exactly 10 digits');
+    return false;
+  }
+  setFieldState('vphone','vphone-hint',true,'Valid phone number');
+  return true;
+}
+
+// ── Password strength ──────────────────────────────────
+function checkStrength(v){
+  const f=document.getElementById('sfill');
+  let s=0;
+  if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+  const w=['0%','30%','55%','80%','100%'];
+  const c=['','#ef4444','#f59e0b','#3b82f6','#22c55e'];
+  f.style.width=w[s];f.style.background=c[s];
+}
+
+// ── Error display ──────────────────────────────────────
+function showErr(msg){
+  const box=document.getElementById('err');
+  document.getElementById('err-text').textContent=msg;
+  box.style.display='flex';
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function hideErr(){document.getElementById('err').style.display='none';}
+
+// ── Register Vendor ────────────────────────────────────
+function registerVendor(){
+  hideErr();
+  const name=document.getElementById('vname').value.trim();
+  const shopname=document.getElementById('shopname').value.trim();
+  const email=document.getElementById('vemail').value.trim();
+  const phone=document.getElementById('vphone').value.trim();
+  const pass=document.getElementById('vpass').value;
+  const pass2=document.getElementById('vpass2').value;
+
+  // ── Required
+  if(!name||!shopname||!email||!phone||!pass||!pass2){showErr('Please fill in all fields.');return;}
+
+  // ── Full Name (max 30)
+  if(name.length>30){showErr('Full name must not exceed 30 characters.');document.getElementById('vname').focus();return;}
+  if(!validateVName()){showErr('Please enter a valid full name (max 30 characters).');return;}
+
+  // ── Shop Name (max 30)
+  if(shopname.length>30){showErr('Shop name must not exceed 30 characters.');document.getElementById('shopname').focus();return;}
+  if(!validateShopName()){showErr('Please enter a valid shop name (max 30 characters).');return;}
+
+  // ── Email (.com)
+  if(!EMAIL_RE.test(email)){
+    showErr('Invalid email. It must contain a name, @, domain name, and end with .com');
+    document.getElementById('vemail').focus();return;
+  }
+
+  // ── Phone: exactly 10 digits
+  if(!/^\d{10}$/.test(phone)){
+    showErr('Phone number must be exactly 10 digits (numbers only).');
+    document.getElementById('vphone').focus();return;
+  }
+
+  // ── Passwords
+  if(pass!==pass2){showErr('Passwords do not match.');return;}
+  if(pass.length<6){showErr('Password must be at least 6 characters.');return;}
+
+  // ── Duplicate check
+  const users=JSON.parse(localStorage.getItem('fa_users')||'[]');
+  if(users.find(u=>u.email===email)){showErr('An account with this email already exists.');return;}
+
+  // ── Save
+  const otp=String(Math.floor(100000+Math.random()*900000));
+  const user={
+    id:'VND_'+Date.now(),
+    name, shopname, email, phone, pass,
+    role:'vendor', otp, verified:false,
+    createdAt:new Date().toISOString(),
+    orders:[]
+  };
+  users.push(user);
+  localStorage.setItem('fa_users',JSON.stringify(users));
+  localStorage.setItem('fa_pending_otp_email',email);
+  localStorage.setItem('fa_otp_'+email,otp);
+  alert('📨 OTP sent to '+email+'\n\nFor demo, your OTP is: '+otp);
+  window.location.href='fa_print_otp.html';
+}
+</script>
+</body>
+</html>
