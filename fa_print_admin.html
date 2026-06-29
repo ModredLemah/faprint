@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FA Print — Admin Backend</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<style>
+:root{
+  --primary:#4fc3f7;
+  --accent:#1e40af;
+  --dark:#0f172a;
+  --surface:#1e293b;
+  --border:rgba(255,255,255,.1);
+  --text-muted:#64748b;
+  --white:#f8fafc;
+  --shadow:0 8px 32px rgba(0,0,0,.4);
+  --radius:12px;}
+  [data-theme="light"]{
+    --dark:#f1f5f9;
+    --surface:#ffffff;
+    --border:rgba(0,0,0,.08);
+    --text-muted:#94a3b8;
+    --white:#0f172a;--shadow:0 4px 20px rgba(0,0,0,.08);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+body{font-family:'DM Sans',sans-serif;background:var(--dark);
+color:var(--white);
+min-height:100vh;display:flex;
+transition:background .3s,color .3s;}
+
+/* SIDEBAR */
+.sidebar{
+  width:240px;background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;
+  top:0;left:0;height:100vh;z-index:50;}
+[data-theme="light"] 
+.sidebar{
+  background:#fff;}
+.sidebar-brand{
+  padding:24px 20px;
+  border-bottom:1px solid var(--border);}
+.sidebar-brand .logo{
+  font-family:'Sora',sans-serif;
+  font-weight:800;
+  font-size:1.3rem;
+  background:linear-gradient(90deg,var(--primary),#818cf8);
+  background-clip:text;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;}
+.sidebar-brand .sub{
+  font-size:.72rem;color:var(--text-muted);
+  margin-top:2px;
+  letter-spacing:.5px;}
+.nav-items{
+  flex:1;
+  padding:16px 10px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  overflow-y:auto;}
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:.88rem;
+  font-weight:500;
+  color:var(--text-muted);
+  transition:all .2s;border:none;
+  background:none;
+  font-family:inherit;
+  width:100%;text-align:left;}
+.nav-item:hover{
+  background:rgba(79,195,247,.08);
+  color:var(--white);}
+.nav-item.active{
+  background:rgba(79,195,247,.12);
+  color:var(--primary);
+  font-weight:600;}
+.nav-item i{
+  width:18px;
+  text-align:center;}
+
+  .sidebar-bottom{
+  padding:16px;
+  border-top:1px solid var(--border);}
+
+  .admin-chip{display:flex;
+  align-items:center;
+  gap:10px;padding:10px 12px;
+  background:rgba(79,195,247,.08);
+  border-radius:10px;
+  border:1px solid rgba(79,195,247,.15);}
+
+  .admin-chip .dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#4ade80;
+  box-shadow:0 0 6px #4ade80;}
+.admin-chip .info{flex:1;}
+
+.admin-chip .name{
+  font-size:.85rem;
+  font-weight:600;}
+
+  .admin-chip .role{
+  font-size:.72rem;
+  color:var(--text-muted);}
+
+/* MAIN */
+.content-area{
+  margin-left:240px;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;}
+
+.topbar{
+  height:64px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 28px;
+  position:sticky;
+  top:0;z-index:40;}
+[data-theme="light"] 
+
+.topbar{
+  background:#fff;
+}
+.topbar-title{
+  font-family:'Sora',sans-serif;
+  font-size:1.1rem;
+  font-weight:700;
+}
+.topbar-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.theme-btn{
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--border);
+  color:var(--text-muted);
+  padding:7px 14px;
+  border-radius:8px;
+  font-size:.85rem;
+  cursor:pointer;
+  font-family:inherit;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  transition:all .2s;
+}
+.theme-btn:hover{
+  border-color:var(--primary);
+}
+.refresh-btn{
+  background:rgba(79,195,247,.1);
+  border:1px solid rgba(79,195,247,.2);
+  color:var(--primary);
+  padding:7px 14px;
+  border-radius:8px;
+  font-size:.85rem;
+  cursor:pointer;
+  font-family:inherit;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  transition:all .2s;
+}
+.refresh-btn:hover{
+  background:rgba(79,195,247,.2);
+}
+
+.main-body{
+  flex:1;
+  padding:28px;
+}
+
+/* TAB PANELS */
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:28px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);}
+[data-theme="light"] .stat-card{background:#fff;}
+.stat-label{font-size:.78rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;}
+.stat-val{font-family:'Sora',sans-serif;font-size:2rem;font-weight:800;}
+.stat-val.blue{background:linear-gradient(135deg,#4fc3f7,#1e40af);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-val.green{background:linear-gradient(135deg,#4ade80,#16a34a);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-val.yellow{background:linear-gradient(135deg,#fbbf24,#d97706);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-val.purple{background:linear-gradient(135deg,#818cf8,#6d28d9);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-val.red{background:linear-gradient(135deg,#f87171,#dc2626);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+/* PANELS */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:24px;}
+[data-theme="light"] .panel{background:#fff;}
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.panel-title{font-family:'Sora',sans-serif;font-size:.95rem;font-weight:700;display:flex;align-items:center;gap:8px;}
+.panel-title i{color:var(--primary);}
+
+/* TABLES */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.tbl td{padding:12px;border-bottom:1px solid var(--border);font-size:.88rem;vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:rgba(255,255,255,.02);}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:.74rem;font-weight:600;}
+.badge.pending{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.25);}
+.badge.processing{background:rgba(79,195,247,.12);color:#4fc3f7;border:1px solid rgba(79,195,247,.25);}
+.badge.ready{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.25);}
+.badge.completed{background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.25);}
+.badge.approved{background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.25);}
+.badge.student{background:rgba(79,195,247,.1);color:#4fc3f7;border:1px solid rgba(79,195,247,.2);}
+.badge.vendor{background:rgba(129,140,248,.1);color:#818cf8;border:1px solid rgba(129,140,248,.2);}
+.badge.verified{background:rgba(74,222,128,.1);color:#4ade80;border:1px solid rgba(74,222,128,.2);}
+.badge.unverified{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);}
+
+.btn-sm{padding:5px 12px;border:none;border-radius:7px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+.btn-approve{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3);}
+.btn-approve:hover{background:rgba(34,197,94,.25);}
+.btn-reject{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);}
+.btn-reject:hover{background:rgba(239,68,68,.2);}
+.btn-delete{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);}
+.btn-delete:hover{background:rgba(239,68,68,.2);}
+
+.empty{text-align:center;color:var(--text-muted);padding:40px;font-size:.88rem;}
+.empty i{font-size:2rem;display:block;margin-bottom:10px;opacity:.3;}
+
+/* LOGIN */
+#admin-login{display:flex;align-items:center;justify-content:center;min-height:100vh;width:100%;position:fixed;inset:0;background:var(--dark);z-index:1000;}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:44px 40px;width:100%;max-width:380px;box-shadow:var(--shadow);}
+[data-theme="light"] .login-card{background:#fff;}
+.login-logo{font-family:'Sora',sans-serif;font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,#4fc3f7,#818cf8);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:4px;}
+.login-sub{text-align:center;color:var(--text-muted);font-size:.85rem;margin-bottom:28px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
+.field input{width:100%;padding:12px 14px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;color:var(--white);font-size:.9rem;outline:none;font-family:inherit;transition:border-color .2s;}
+[data-theme="light"] .field input{background:#f8fafc;color:#0f172a;}
+.field input:focus{border-color:#4fc3f7;}
+.btn-login{width:100%;padding:13px;background:linear-gradient(135deg,#4fc3f7,#1e40af);border:none;border-radius:10px;color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(30,64,175,.3);transition:transform .15s;}
+.btn-login:hover{transform:translateY(-1px);}
+.login-err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#f87171;border-radius:8px;padding:8px 12px;font-size:.83rem;margin-bottom:14px;display:none;}
+
+/* ── SUPPORT TICKETS TAB ── */
+.ticket-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:12px;transition:border-color .2s;}
+[data-theme="light"] .ticket-card{background:#fff;}
+.ticket-card:hover{border-color:rgba(79,195,247,.3);}
+.ticket-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
+.ticket-name{font-weight:700;font-size:.92rem;}
+.ticket-type{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:.74rem;font-weight:600;background:rgba(79,195,247,.1);color:var(--primary);border:1px solid rgba(79,195,247,.2);}
+.ticket-meta{font-size:.78rem;color:var(--text-muted);margin-bottom:10px;}
+.ticket-msg{font-size:.87rem;line-height:1.6;background:rgba(255,255,255,.03);border-radius:8px;padding:10px 14px;border:1px solid var(--border);}
+[data-theme="light"] .ticket-msg{background:#f8fafc;}
+.ticket-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px;}
+.ticket-contact{font-size:.78rem;color:var(--text-muted);display:flex;gap:12px;}
+.ticket-contact span{display:flex;align-items:center;gap:4px;}
+.btn-close-ticket{padding:5px 12px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:#22c55e;border-radius:7px;font-size:.76rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+.btn-close-ticket:hover{background:rgba(34,197,94,.22);}
+.btn-del-ticket{padding:5px 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#f87171;border-radius:7px;font-size:.76rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+.btn-del-ticket:hover{background:rgba(239,68,68,.2);}
+.badge.open{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.25);}
+.badge.closed{background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.2);}
+/* CONTACT BLOCK */
+.contact-block{background:rgba(79,195,247,.06);border:1px solid rgba(79,195,247,.2);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.contact-block i{font-size:1.5rem;color:var(--primary);}
+.contact-block .cb-text{flex:1;}
+.contact-block .cb-lbl{font-size:.75rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px;}
+.contact-block .cb-val{font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;}
+/* vendor photos in admin */
+.vendor-photos-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+.vendor-photo-thumb{width:64px;height:48px;border-radius:6px;object-fit:cover;border:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<!-- ADMIN LOGIN -->
+<div id="admin-login">
+  <div class="login-card">
+    <div class="login-logo">FA Print</div>
+    <div class="login-sub">Super Admin — Backend Control Panel</div>
+    <div class="login-err" id="login-err"></div>
+    <div class="field"><label>Admin Username</label><input type="text" id="a-user" placeholder="admin"/></div>
+    <div class="field"><label>Admin Password</label><input type="password" id="a-pass" placeholder="••••••" onkeydown="if(event.key==='Enter')adminLogin()"/></div>
+    <button class="btn-login" onclick="adminLogin()"><i class="fas fa-lock"></i> Access Backend</button>
+  </div>
+</div>
+
+<!-- MAIN ADMIN UI (hidden until logged in) -->
+<div id="admin-ui" style="display:none;width:100%;display:flex;display:none;">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">FA Print</div>
+      <div class="sub">ADMIN BACKEND</div>
+    </div>
+    <div class="nav-items">
+      <button class="nav-item active" onclick="showTab('overview',this)"><i class="fas fa-chart-line"></i> Overview</button>
+      <button class="nav-item" onclick="showTab('students',this)"><i class="fas fa-graduation-cap"></i> Students</button>
+      <button class="nav-item" onclick="showTab('vendors',this)"><i class="fas fa-print"></i> Vendors</button>
+      <button class="nav-item" onclick="showTab('orders',this)"><i class="fas fa-list-check"></i> All Orders</button>
+      <button class="nav-item" onclick="showTab('support',this)"><i class="fas fa-headset"></i> Support Tickets</button>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="admin-chip">
+        <div class="dot"></div>
+        <div class="info"><div class="name">Super Admin</div><div class="role">Full Access</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="content-area">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Overview</div>
+      <div class="topbar-right">
+        <button class="theme-btn" onclick="toggleTheme()"><i class="fas fa-circle-half-stroke"></i> Theme</button>
+        <button class="refresh-btn" onclick="refreshAll()"><i class="fas fa-rotate-right"></i> Refresh</button>
+        <button class="btn-sm btn-reject" onclick="adminLogout()"><i class="fas fa-right-from-bracket"></i> Logout</button>
+      </div>
+    </div>
+
+    <div class="main-body">
+
+      <!-- OVERVIEW TAB -->
+      <div class="tab-panel active" id="tab-overview">
+        <div class="stats" id="ov-stats"></div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title"><i class="fas fa-clock-rotate-left"></i> Recent Orders</div></div>
+          <div id="ov-orders"></div>
+        </div>
+      </div>
+
+      <!-- STUDENTS TAB -->
+      <div class="tab-panel" id="tab-students">
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title"><i class="fas fa-graduation-cap"></i> All Registered Students</div></div>
+          <div id="students-tbl"></div>
+        </div>
+      </div>
+
+      <!-- VENDORS TAB -->
+      <div class="tab-panel" id="tab-vendors">
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title"><i class="fas fa-store"></i> All Registered Vendors</div></div>
+          <div id="vendors-tbl"></div>
+        </div>
+      </div>
+
+      <!-- ORDERS TAB -->
+      <div class="tab-panel" id="tab-orders">
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title"><i class="fas fa-list-check"></i> All Print Orders</div></div>
+          <div id="orders-tbl"></div>
+        </div>
+      </div>
+
+
+      <!-- SUPPORT TICKETS TAB -->
+      <div class="tab-panel" id="tab-support">
+        <div class="contact-block">
+          <i class="fas fa-phone-volume"></i>
+          <div class="cb-text">
+            <div class="cb-lbl">FA Print Support Contact</div>
+            <div class="cb-val">+255 626 730 085</div>
+          </div>
+          <a href="tel:+255626730085" style="padding:8px 16px;background:linear-gradient(135deg,#4ade80,#16a34a);border:none;border-radius:8px;color:#fff;font-size:.85rem;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:6px;"><i class="fas fa-phone"></i> Call Now</a>
+          <a href="https://wa.me/255626730085" target="_blank" style="padding:8px 16px;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.3);border-radius:8px;color:#4ade80;font-size:.85rem;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:6px;"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fas fa-headset"></i> Student Support Tickets</div>
+            <span id="ticket-count" style="font-size:.82rem;color:var(--text-muted)"></span>
+          </div>
+          <div id="tickets-wrap"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// Theme
+const saved=localStorage.getItem('fa_theme')||'dark';
+if(saved==='light')applyLight();
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme');if(c==='light'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('fa_theme','dark');}else{applyLight();}}
+function applyLight(){document.documentElement.setAttribute('data-theme','light');localStorage.setItem('fa_theme','light');}
+
+// Admin auth (simple — for demo: admin/admin123)
+const ADMIN_USER='admin';const ADMIN_PASS='admin123';
+let adminLoggedIn=sessionStorage.getItem('fa_admin')==='1';
+if(adminLoggedIn)showAdminUI();
+
+function adminLogin(){
+  const u=document.getElementById('a-user').value;
+  const p=document.getElementById('a-pass').value;
+  const err=document.getElementById('login-err');
+  err.style.display='none';
+  if(u===ADMIN_USER&&p===ADMIN_PASS){sessionStorage.setItem('fa_admin','1');showAdminUI();}
+  else{err.textContent='Invalid credentials. Try admin / admin123';err.style.display='block';}
+}
+function adminLogout(){sessionStorage.removeItem('fa_admin');location.reload();}
+function showAdminUI(){
+  document.getElementById('admin-login').style.display='none';
+  document.getElementById('admin-ui').style.display='flex';
+  refreshAll();
+}
+
+const getUsers=()=>JSON.parse(localStorage.getItem('fa_users')||'[]');
+const getOrders=()=>JSON.parse(localStorage.getItem('fa_orders')||'[]');
+
+function showTab(id,el){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+  const titles={overview:'Overview',students:'Students',vendors:'Vendors',orders:'All Orders',support:'Support Tickets'};
+  document.getElementById('topbar-title').textContent=titles[id]||id;
+  refreshAll();
+}
+
+function refreshAll(){
+  renderOverview();renderStudents();renderVendors();renderOrders();renderTickets();
+}
+
+function renderOverview(){
+  const users=getUsers();const orders=getOrders();
+  const students=users.filter(u=>u.role==='student');
+  const vendors=users.filter(u=>u.role==='vendor');
+  document.getElementById('ov-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Total Students</div><div class="stat-val blue">${students.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Vendors</div><div class="stat-val purple">${vendors.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Pending Vendors</div><div class="stat-val yellow">${vendors.filter(v=>v.status==='pending').length}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Orders</div><div class="stat-val blue">${orders.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Active Orders</div><div class="stat-val green">${orders.filter(o=>o.status!=='completed').length}</div></div>
+    <div class="stat-card"><div class="stat-label">Completed</div><div class="stat-val green">${orders.filter(o=>o.status==='completed').length}</div></div>
+    <div class="stat-card"><div class="stat-label">Open Tickets</div><div class="stat-val yellow">${JSON.parse(localStorage.getItem('fa_support_tickets')||'[]').filter(t=>t.status!=='closed').length}</div></div>
+  `;
+  const recent=[...orders].reverse().slice(0,8);
+  if(!recent.length){document.getElementById('ov-orders').innerHTML='<div class="empty"><i class="fas fa-inbox"></i>No orders yet</div>';return;}
+  document.getElementById('ov-orders').innerHTML=`<table class="tbl">
+    <thead><tr><th>Student</th><th>Document</th><th>Shop</th><th>Amount</th><th>Status</th><th>Payment</th><th>Date</th></tr></thead>
+    <tbody>${recent.map(o=>`<tr>
+      <td>${o.studentName||'—'}</td>
+      <td>${o.title}</td>
+      <td>${o.shopName||'—'}</td>
+      <td><span class="badge ${o.status}">${o.status}</span></td>
+      <td style="font-weight:600;color:#4fc3f7">Tsh ${(o.totalAmount||0).toLocaleString()}</td>
+      <td><span class="badge ${o.paymentStatus==='paid'?'approved':'unverified'}">${o.paymentStatus==='paid'?'Paid':'Unpaid'}</span></td>
+      <td style="color:var(--text-muted);font-size:.82rem">${new Date(o.createdAt).toLocaleDateString()}</td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function renderStudents(){
+  const students=getUsers().filter(u=>u.role==='student');
+  if(!students.length){document.getElementById('students-tbl').innerHTML='<div class="empty"><i class="fas fa-users"></i>No students registered yet</div>';return;}
+  document.getElementById('students-tbl').innerHTML=`<table class="tbl">
+    <thead><tr><th>Name</th><th>Reg. Number</th><th>Email</th><th>Phone</th><th>Verified</th><th>Orders</th><th>Joined</th><th>Actions</th></tr></thead>
+    <tbody>${students.map(s=>`<tr>
+      <td><strong>${s.name}</strong></td>
+      <td style="font-size:.82rem;color:var(--text-muted)">${s.regno||'—'}</td>
+      <td>${s.email}</td>
+      <td>${s.phone||'—'}</td>
+      <td><span class="badge ${s.verified?'verified':'unverified'}">${s.verified?'Verified':'Unverified'}</span></td>
+      <td>${(s.orders||[]).length}</td>
+      <td style="color:var(--text-muted);font-size:.82rem">${new Date(s.createdAt).toLocaleDateString()}</td>
+      <td><button class="btn-sm btn-delete" onclick="deleteUser('${s.id}')"><i class="fas fa-trash"></i></button></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function renderVendors(){
+  const vendors=getUsers().filter(u=>u.role==='vendor');
+  if(!vendors.length){document.getElementById('vendors-tbl').innerHTML='<div class="empty"><i class="fas fa-store"></i>No vendors registered yet</div>';return;}
+  document.getElementById('vendors-tbl').innerHTML=`<table class="tbl">
+    <thead><tr><th>Shop</th><th>Owner</th><th>Email</th><th>Location</th><th>Services</th><th>Verified</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${vendors.map(v=>`<tr>
+      <td><strong>${v.shopname||'—'}</strong>${v.photos&&v.photos.filter(Boolean).length?'<div class="vendor-photos-row">'+v.photos.filter(Boolean).map(p=>'<img class="vendor-photo-thumb" src="'+p+'" alt="Shop">').join('')+'</div>':''}</td>
+      <td>${v.name}</td>
+      <td>${v.email}</td>
+      <td style="font-size:.82rem">${v.location||'—'}</td>
+      <td style="font-size:.82rem">${v.services||'—'}</td>
+      <td><span class="badge ${v.verified?'verified':'unverified'}">${v.verified?'✓ Yes':'✗ No'}</span></td>
+      <td><span class="badge ${v.status==='approved'?'approved':'pending'}">${v.status||'pending'}</span></td>
+      <td style="display:flex;gap:4px;flex-wrap:wrap">
+        ${v.status!=='approved'?`<button class="btn-sm btn-approve" onclick="approveVendor('${v.id}')">Approve</button>`:''}
+        ${v.status==='approved'?`<button class="btn-sm btn-reject" onclick="suspendVendor('${v.id}')">Suspend</button>`:''}
+        <button class="btn-sm btn-delete" onclick="deleteUser('${v.id}')"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function renderOrders(){
+  const orders=[...getOrders()].reverse();
+  if(!orders.length){document.getElementById('orders-tbl').innerHTML='<div class="empty"><i class="fas fa-inbox"></i>No orders in the system yet</div>';return;}
+  document.getElementById('orders-tbl').innerHTML=`<table class="tbl">
+    <thead><tr><th>Order ID</th><th>Student</th><th>Document</th><th>Shop</th><th>Type</th><th>Copies</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+    <tbody>${orders.map(o=>`<tr>
+      <td style="font-size:.78rem;color:var(--text-muted)">${o.id}</td>
+      <td>${o.studentName||'—'}</td>
+      <td>${o.title}<br><small style="color:var(--text-muted)">${o.fileName}</small></td>
+      <td>${o.shopName||'—'}</td>
+      <td><span class="badge ${o.type==='bw'?'processing':'ready'}">${o.type==='bw'?'B&W':'Color'}</span></td>
+      <td>${o.copies}</td>
+      <td><span class="badge ${o.status}">${o.status}</span></td>
+      <td style="font-size:.78rem;color:var(--text-muted)">${new Date(o.createdAt).toLocaleDateString()}</td>
+      <td>
+        <select style="background:var(--surface);border:1px solid var(--border);color:var(--white);padding:4px 8px;border-radius:6px;font-size:.78rem;cursor:pointer;" onchange="forceStatus('${o.id}',this.value)">
+          <option value="">Change…</option>
+          <option value="pending">Pending</option>
+          <option value="processing">Processing</option>
+          <option value="ready">Ready</option>
+          <option value="completed">Completed</option>
+        </select>
+      </td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function approveVendor(id){
+  const users=getUsers();const idx=users.findIndex(u=>u.id===id);
+  if(idx>-1){users[idx].status='approved';localStorage.setItem('fa_users',JSON.stringify(users));}
+  refreshAll();
+}
+function suspendVendor(id){
+  const users=getUsers();const idx=users.findIndex(u=>u.id===id);
+  if(idx>-1){users[idx].status='suspended';localStorage.setItem('fa_users',JSON.stringify(users));}
+  refreshAll();
+}
+function deleteUser(id){
+  if(!confirm('Delete this user? This cannot be undone.'))return;
+  const users=getUsers().filter(u=>u.id!==id);
+  localStorage.setItem('fa_users',JSON.stringify(users));refreshAll();
+}
+function forceStatus(orderId,status){
+  if(!status)return;
+  const orders=getOrders();const idx=orders.findIndex(o=>o.id===orderId);
+  if(idx>-1){orders[idx].status=status;localStorage.setItem('fa_orders',JSON.stringify(orders));}
+  // Sync to user records too
+  const users=getUsers();
+  users.forEach(u=>{if(u.orders){const oi=u.orders.findIndex(o=>o.id===orderId);if(oi>-1)u.orders[oi].status=status;}});
+  localStorage.setItem('fa_users',JSON.stringify(users));
+  refreshAll();
+}
+
+/* ── SUPPORT TICKETS ── */
+function renderTickets() {
+  const tickets = JSON.parse(localStorage.getItem('fa_support_tickets') || '[]').reverse();
+  const wrap = document.getElementById('tickets-wrap');
+  const cnt  = document.getElementById('ticket-count');
+  if (!tickets.length) { wrap.innerHTML = '<div class="empty"><i class="fas fa-inbox"></i>No support tickets yet</div>'; cnt.textContent = ''; return; }
+  const open = tickets.filter(t => t.status !== 'closed').length;
+  cnt.textContent = open + ' open, ' + tickets.length + ' total';
+  wrap.innerHTML = tickets.map(t => {
+    const typeLabels = { order:'Order Issue', payment:'Payment Issue', shop:'Shop Issue', account:'Account Issue', map:'Map Issue', other:'Other' };
+    return '<div class="ticket-card">' +
+      '<div class="ticket-header">' +
+        '<span class="ticket-name"><i class="fas fa-user" style="color:var(--primary);margin-right:6px"></i>' + (t.studentName||'Unknown') + '</span>' +
+        '<div style="display:flex;align-items:center;gap:6px"><span class="ticket-type">' + (typeLabels[t.type]||t.type) + '</span><span class="badge ' + (t.status==='closed'?'closed':'open') + '">' + (t.status==='closed'?'Closed':'Open') + '</span></div>' +
+      '</div>' +
+      '<div class="ticket-meta"><i class="fas fa-clock" style="margin-right:4px"></i>' + new Date(t.createdAt).toLocaleString() + '</div>' +
+      '<div class="ticket-msg">' + t.msg + '</div>' +
+      '<div class="ticket-footer">' +
+        '<div class="ticket-contact">' +
+          (t.email ? '<span><i class="fas fa-envelope"></i>' + t.email + '</span>' : '') +
+          (t.phone ? '<span><i class="fas fa-phone"></i>' + t.phone + '</span>' : '') +
+        '</div>' +
+        '<div style="display:flex;gap:6px">' +
+          (t.status !== 'closed' ? '<button class="btn-close-ticket" onclick="closeTicket(\'' + t.id + '\')">Mark Resolved</button>' : '') +
+          '<button class="btn-del-ticket" onclick="deleteTicket(\'' + t.id + '\')"><i class="fas fa-trash"></i></button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+function closeTicket(id) {
+  const tickets = JSON.parse(localStorage.getItem('fa_support_tickets') || '[]');
+  const i = tickets.findIndex(t => t.id === id);
+  if (i > -1) { tickets[i].status = 'closed'; localStorage.setItem('fa_support_tickets', JSON.stringify(tickets)); }
+  renderTickets();
+}
+function deleteTicket(id) {
+  if (!confirm('Delete this ticket?')) return;
+  const tickets = JSON.parse(localStorage.getItem('fa_support_tickets') || '[]').filter(t => t.id !== id);
+  localStorage.setItem('fa_support_tickets', JSON.stringify(tickets));
+  renderTickets();
+}
+
+// Auto-refresh every 20s
+setInterval(()=>{if(adminLoggedIn||sessionStorage.getItem('fa_admin')==='1')refreshAll();},20000);
+</script>
+</body>
+</html>

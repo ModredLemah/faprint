@@ -1,0 +1,120 @@
+flowchart TB
+    %% ================= ENTITIES (rectangles) =================
+    USERS["USERS"]
+    VENDORS["VENDORS"]
+    ORDERS["ORDERS"]
+    DOCUMENTS["DOCUMENTS"]
+    PAYTX["PAYMENT_TRANSACTIONS"]
+    PAYLOG["PAYMENT_LOGS"]
+    NOTIF["NOTIFICATIONS"]
+    TICKETS["SUPPORT_TICKETS"]
+    AUDIT["AUDIT_LOGS"]
+
+    classDef entity fill:#4C78A8,stroke:#1f3b57,color:#ffffff,stroke-width:2px;
+    classDef rel fill:#F2C14E,stroke:#8a6d1a,color:#1a1a1a,stroke-width:2px;
+    classDef attr fill:#9ECAE1,stroke:#3b6f96,color:#1a1a1a;
+    classDef keyattr fill:#9ECAE1,stroke:#3b6f96,color:#1a1a1a,font-weight:bold;
+
+    class USERS,VENDORS,ORDERS,DOCUMENTS,PAYTX,PAYLOG,NOTIF,TICKETS,AUDIT entity;
+
+    %% ================= RELATIONSHIPS (diamonds) =================
+    R_OWNS{{"owns"}}
+    R_PLACES{{"places"}}
+    R_FULFILLS{{"fulfills"}}
+    R_CONTAINS{{"contains"}}
+    R_HASTX{{"has"}}
+    R_HASLOG{{"logs"}}
+    R_RECEIVES{{"receives"}}
+    R_SUBMITS{{"submits"}}
+    R_PERFORMS{{"performs"}}
+
+    class R_OWNS,R_PLACES,R_FULFILLS,R_CONTAINS,R_HASTX,R_HASLOG,R_RECEIVES,R_SUBMITS,R_PERFORMS rel;
+
+    %% ================= RELATIONSHIP WIRING with cardinality =================
+    USERS ---|"1"| R_OWNS
+    R_OWNS ---|"1"| VENDORS
+
+    USERS ---|"1"| R_PLACES
+    R_PLACES ---|"N"| ORDERS
+
+    VENDORS ---|"1"| R_FULFILLS
+    R_FULFILLS ---|"N"| ORDERS
+
+    ORDERS ---|"1"| R_CONTAINS
+    R_CONTAINS ---|"N"| DOCUMENTS
+
+    ORDERS ---|"1"| R_HASTX
+    R_HASTX ---|"N"| PAYTX
+
+    ORDERS ---|"1"| R_HASLOG
+    R_HASLOG ---|"N"| PAYLOG
+
+    USERS ---|"1"| R_RECEIVES
+    R_RECEIVES ---|"N"| NOTIF
+
+    USERS ---|"1"| R_SUBMITS
+    R_SUBMITS ---|"N"| TICKETS
+
+    USERS ---|"1"| R_PERFORMS
+    R_PERFORMS ---|"N"| AUDIT
+
+    %% ================= ATTRIBUTES (ovals) =================
+    U_ID(["id (PK)"]):::keyattr --- USERS
+    U_NAME(["name"]):::attr --- USERS
+    U_EMAIL(["email"]):::attr --- USERS
+    U_PHONE(["phone"]):::attr --- USERS
+    U_ROLE(["role"]):::attr --- USERS
+    U_REGNO(["regno"]):::attr --- USERS
+    U_VER(["verified"]):::attr --- USERS
+
+    V_ID(["id (PK)"]):::keyattr --- VENDORS
+    V_SHOP(["shop_name"]):::attr --- VENDORS
+    V_PBW(["price_bw"]):::attr --- VENDORS
+    V_PCOL(["price_color"]):::attr --- VENDORS
+    V_STATUS(["status"]):::attr --- VENDORS
+    V_LOC(["location"]):::attr --- VENDORS
+    V_QSTAT(["queue_status"]):::attr --- VENDORS
+
+    O_ID(["id (PK)"]):::keyattr --- ORDERS
+    O_NUM(["order_number"]):::attr --- ORDERS
+    O_TOTAL(["total_price"]):::attr --- ORDERS
+    O_STATUS(["status"]):::attr --- ORDERS
+    O_PSTAT(["payment_status"]):::attr --- ORDERS
+    O_PMETH(["payment_method"]):::attr --- ORDERS
+
+    D_ID(["id (PK)"]):::keyattr --- DOCUMENTS
+    D_ONAME(["original_name"]):::attr --- DOCUMENTS
+    D_PATH(["file_path"]):::attr --- DOCUMENTS
+    D_COPIES(["copies"]):::attr --- DOCUMENTS
+    D_COLOR(["color_mode"]):::attr --- DOCUMENTS
+    D_STATUS(["status"]):::attr --- DOCUMENTS
+
+    PT_ID(["id (PK)"]):::keyattr --- PAYTX
+    PT_AMT(["amount"]):::attr --- PAYTX
+    PT_METH(["payment_method"]):::attr --- PAYTX
+    PT_TXID(["transaction_id"]):::attr --- PAYTX
+    PT_STAT(["status"]):::attr --- PAYTX
+
+    PL_ID(["id (PK)"]):::keyattr --- PAYLOG
+    PL_PHONE(["phone"]):::attr --- PAYLOG
+    PL_AMT(["amount"]):::attr --- PAYLOG
+    PL_GATE(["gateway"]):::attr --- PAYLOG
+    PL_REF(["reference"]):::attr --- PAYLOG
+    PL_STAT(["status"]):::attr --- PAYLOG
+
+    N_ID(["id (PK)"]):::keyattr --- NOTIF
+    N_TYPE(["type"]):::attr --- NOTIF
+    N_TITLE(["title"]):::attr --- NOTIF
+    N_MSG(["message"]):::attr --- NOTIF
+    N_READ(["is_read"]):::attr --- NOTIF
+
+    T_ID(["id (PK)"]):::keyattr --- TICKETS
+    T_SUBJ(["subject"]):::attr --- TICKETS
+    T_MSG(["message"]):::attr --- TICKETS
+    T_STAT(["status"]):::attr --- TICKETS
+    T_PRIO(["priority"]):::attr --- TICKETS
+
+    A_ID(["id (PK)"]):::keyattr --- AUDIT
+    A_ACT(["action"]):::attr --- AUDIT
+    A_ETYPE(["entity_type"]):::attr --- AUDIT
+    A_IP(["ip_address"]):::attr --- AUDIT

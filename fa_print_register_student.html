@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FA Print — Student Registration</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<style>
+:root{--primary:#4fc3f7;--accent:#1e40af;--dark:#1f2937;--border:rgba(255,255,255,.12);--text-muted:#94a3b8;--white:#ffffff;--shadow:0 20px 60px rgba(0,0,0,.35);}
+[data-theme="light"]{--bg:#f0f4f8;--card-bg:#ffffff;--border:rgba(0,0,0,.1);--text:#1f2937;--text-muted:#64748b;--shadow:0 20px 60px rgba(0,0,0,.10);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg,#1f2937);color:var(--text,#fff);min-height:100vh;transition:background .3s,color .3s;}
+.navbar{position:sticky;top:0;z-index:100;height:68px;background:rgba(31,41,55,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 5%;}
+[data-theme="light"] .navbar{background:rgba(255,255,255,.95);}
+.nav-brand{font-family:'Sora',sans-serif;font-weight:800;font-size:1.45rem;letter-spacing:-.5px;background:linear-gradient(90deg,var(--primary),#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.theme-toggle{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text-muted);padding:8px 14px;border-radius:8px;font-size:.88rem;transition:all .2s;display:flex;align-items:center;gap:6px;cursor:pointer;}
+.theme-toggle:hover{color:var(--text,#fff);border-color:var(--primary);}
+.wrap{min-height:calc(100vh - 68px);display:flex;align-items:center;justify-content:center;padding:40px 20px;position:relative;overflow:hidden;}
+.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18;pointer-events:none;}
+.b1{width:500px;height:500px;background:var(--accent);top:-100px;left:-150px;}
+.b2{width:400px;height:400px;background:var(--primary);bottom:-80px;right:-100px;}
+.card{background:var(--card-bg,rgba(255,255,255,.05));border:1px solid var(--border);border-radius:24px;padding:44px 40px;width:100%;max-width:480px;backdrop-filter:blur(20px);box-shadow:var(--shadow);position:relative;z-index:1;animation:fadeUp .6s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.logo{text-align:center;font-family:'Sora',sans-serif;font-weight:800;font-size:2rem;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.tagline{text-align:center;color:var(--text-muted);font-size:.88rem;margin-bottom:12px;}
+.type-badge{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(79,195,247,.12);border:1px solid rgba(79,195,247,.25);color:var(--primary);font-size:.82rem;font-weight:600;padding:6px 16px;border-radius:99px;width:fit-content;margin:0 auto 28px;}
+.title{font-family:'Sora',sans-serif;font-size:1.4rem;font-weight:700;margin-bottom:24px;}
+.field{margin-bottom:18px;position:relative;}
+.field label{display:flex;align-items:center;justify-content:space-between;font-size:.83rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;}
+.field label .char-count{font-size:.75rem;font-weight:500;letter-spacing:0;text-transform:none;color:var(--text-muted);}
+.field label .char-count.over{color:#ef4444;}
+.field input{width:100%;padding:13px 16px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;color:var(--text,#fff);font-size:.95rem;transition:border-color .2s,box-shadow .2s;outline:none;}
+[data-theme="light"] .field input{background:#f8fafc;color:#1f2937;}
+.field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,195,247,.15);}
+.field input.valid{border-color:#22c55e;}
+.field input.invalid{border-color:#ef4444;}
+.field input::placeholder{color:#4b5563;}
+[data-theme="light"] .field input::placeholder{color:#9ca3af;}
+.field-hint{font-size:.76rem;color:var(--text-muted);margin-top:5px;display:flex;align-items:center;gap:4px;}
+.field-hint.error-hint{color:#f87171;}
+.field-hint i{font-size:.7rem;}
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--primary),var(--accent));border:none;border-radius:10px;color:#fff;font-size:1rem;font-weight:700;letter-spacing:.3px;transition:transform .15s,box-shadow .2s;box-shadow:0 8px 24px rgba(30,64,175,.35);margin-top:4px;cursor:pointer;}
+.btn:hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(30,64,175,.45);}
+.switch{text-align:center;margin-top:20px;font-size:.9rem;color:var(--text-muted);}
+.switch a{color:var(--primary);font-weight:600;}
+.switch a:hover{text-decoration:underline;}
+.error{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#f87171;border-radius:8px;padding:10px 14px;font-size:.88rem;margin-bottom:16px;display:none;align-items:center;gap:8px;}
+.strength{height:4px;border-radius:99px;background:rgba(255,255,255,.1);margin-top:6px;overflow:hidden;}
+.strength-fill{height:100%;width:0;border-radius:99px;transition:width .3s,background .3s;}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="fa_print_landing.html" class="nav-brand">FA Print</a>
+  <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-circle-half-stroke"></i> <span id="tlabel">Light Mode</span></button>
+</nav>
+<div class="wrap">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="card">
+    <div class="logo">FA Print</div>
+    <div class="tagline">Far Fast Print — Your 24/7 Printing Bridge</div>
+    <div class="type-badge"><i class="fas fa-graduation-cap"></i> Student Account</div>
+    <div class="title">Create Account</div>
+    <div class="error" id="err"><i class="fas fa-circle-exclamation"></i> <span id="err-text"></span></div>
+
+    <!-- Full Name -->
+    <div class="field">
+      <label>Full Name <span class="char-count" id="name-count">0/30</span></label>
+      <input type="text" id="name" placeholder="e.g. Moses Malema" autocomplete="name"
+             maxlength="30" oninput="countChars('name','name-count',30)" onblur="validateName()"/>
+      <div class="field-hint" id="name-hint"><i class="fas fa-info-circle"></i> Maximum 30 characters</div>
+    </div>
+
+    <!-- Registration Number -->
+    <div class="field">
+      <label>Registration Number</label>
+      <input type="text" id="regno" placeholder="e.g. CM/DP/2024/85867" oninput="formatRegno(this)" onblur="validateRegno()"/>
+      <div class="field-hint" id="regno-hint"><i class="fas fa-info-circle"></i> Format: CM/CT|DP|BD/2019–2026/5-digit ID</div>
+    </div>
+
+    <!-- Email -->
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="email" placeholder="you@cuom.ac.tz" autocomplete="email" onblur="validateEmail('email','email-hint')"/>
+      <div class="field-hint" id="email-hint"><i class="fas fa-info-circle"></i> Must contain name, @, domain and .com</div>
+    </div>
+
+    <!-- Phone -->
+    <div class="field">
+      <label>Phone Number</label>
+      <input type="tel" id="phone" placeholder="+255 7XX XXX XXX"/>
+    </div>
+
+    <!-- Password -->
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="pass" placeholder="Create a password" oninput="checkStrength(this.value)"/>
+      <div class="strength"><div class="strength-fill" id="sfill"></div></div>
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="field">
+      <label>Confirm Password</label>
+      <input type="password" id="pass2" placeholder="Repeat your password"/>
+    </div>
+
+    <button class="btn" onclick="register()">Create Account</button>
+    <div class="switch">Already have an account? <a href="fa_print_login.html">Log in here</a></div>
+  </div>
+</div>
+<script>
+// ── Theme ──────────────────────────────────────────────
+const saved=localStorage.getItem('fa_theme')||'dark';
+if(saved==='light')applyLight();
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme');if(c==='light'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('fa_theme','dark');document.getElementById('tlabel').textContent='Light Mode';}else{applyLight();}}
+function applyLight(){document.documentElement.setAttribute('data-theme','light');localStorage.setItem('fa_theme','light');document.getElementById('tlabel').textContent='Dark Mode';}
+
+// ── Character counter ──────────────────────────────────
+function countChars(fieldId, countId, max){
+  const v=document.getElementById(fieldId).value;
+  const el=document.getElementById(countId);
+  el.textContent=v.length+'/'+max;
+  el.classList.toggle('over', v.length>=max);
+}
+
+// ── Helpers ────────────────────────────────────────────
+function setFieldState(id, hintId, ok, msg){
+  const inp=document.getElementById(id);
+  const hint=document.getElementById(hintId);
+  inp.classList.toggle('valid', ok);
+  inp.classList.toggle('invalid', !ok);
+  hint.className='field-hint'+(ok?'':' error-hint');
+  hint.innerHTML=(ok?'<i class="fas fa-circle-check" style="color:#22c55e"></i>':'<i class="fas fa-circle-xmark"></i>')+' '+msg;
+}
+function clearFieldState(id, hintId, defaultMsg){
+  const inp=document.getElementById(id);
+  inp.classList.remove('valid','invalid');
+  const hint=document.getElementById(hintId);
+  hint.className='field-hint';
+  hint.innerHTML='<i class="fas fa-info-circle"></i> '+defaultMsg;
+}
+
+// ── Name validation ────────────────────────────────────
+function validateName(){
+  const v=document.getElementById('name').value.trim();
+  if(!v){clearFieldState('name','name-hint','Maximum 30 characters');return false;}
+  if(v.length>30){setFieldState('name','name-hint',false,'Name must not exceed 30 characters');return false;}
+  if(v.length<2){setFieldState('name','name-hint',false,'Name is too short');return false;}
+  setFieldState('name','name-hint',true,'Looks good!');
+  return true;
+}
+
+// ── Registration Number ────────────────────────────────
+// Accepted: CM/(CT|DP|BD)/YYYY/NNNNN  where YYYY ∈ [2019,2026], NNNNN = exactly 5 digits
+const REGNO_RE=/^CM\/(CT|DP|BD)\/(201[9]|202[0-6])\/[0-9]{5}$/;
+
+function formatRegno(inp){
+  // Auto-uppercase
+  inp.value=inp.value.toUpperCase();
+}
+
+function validateRegno(){
+  const v=document.getElementById('regno').value.trim();
+  if(!v){clearFieldState('regno','regno-hint','Format: CM/CT|DP|BD/2019–2026/5-digit ID');return false;}
+  if(!REGNO_RE.test(v)){
+    setFieldState('regno','regno-hint',false,'Invalid format. Expected e.g. CM/DP/2024/85867');
+    return false;
+  }
+  setFieldState('regno','regno-hint',true,'Valid registration number');
+  return true;
+}
+
+// ── Email validation ───────────────────────────────────
+// Must have: local name (≥1 char), @, domain name, dot, .com TLD
+const EMAIL_RE=/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.com$/;
+
+function validateEmail(id, hintId){
+  const v=document.getElementById(id).value.trim();
+  if(!v){clearFieldState(id, hintId,'Must contain name, @, domain and .com');return false;}
+  if(!EMAIL_RE.test(v)){
+    setFieldState(id, hintId, false,'Invalid email. Must include name, @, domain name and end with .com');
+    return false;
+  }
+  setFieldState(id, hintId, true,'Valid email address');
+  return true;
+}
+
+// ── Password strength ──────────────────────────────────
+function checkStrength(v){
+  const f=document.getElementById('sfill');
+  let s=0;
+  if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+  const w=['0%','30%','55%','80%','100%'];
+  const c=['','#ef4444','#f59e0b','#3b82f6','#22c55e'];
+  f.style.width=w[s];f.style.background=c[s];
+}
+
+// ── Show error ─────────────────────────────────────────
+function showErr(msg){
+  const box=document.getElementById('err');
+  document.getElementById('err-text').textContent=msg;
+  box.style.display='flex';
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function hideErr(){document.getElementById('err').style.display='none';}
+
+// ── Register ───────────────────────────────────────────
+async function register() {
+  hideErr();
+  const name = document.getElementById('name').value.trim();
+  const regno = document.getElementById('regno').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const pass = document.getElementById('pass').value;
+  const pass2 = document.getElementById('pass2').value;
+
+  // Validation
+  if (!name || !regno || !email || !phone || !pass || !pass2) { showErr('Please fill in all fields.'); return; }
+  if (pass !== pass2) { showErr('Passwords do not match.'); return; }
+
+  try {
+    const response = await fetch(`http://localhost/faprint/users.php?action=register_student`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, regno, email, phone, password: pass })
+    });
+
+    const data = await response.json();
+    if (data.ok) {
+      localStorage.setItem('fa_pending_otp_email', email);
+      alert('Registration successful! A verification code has been sent to your phone.');
+      window.location.href = 'http://localhost/faprint/fa_print_otp.html';
+    } else {
+      showErr(data.error || 'Registration failed');
+    }
+  } catch (e) {
+    showErr('Connection error. Is XAMPP running?');
+  }
+}
+</script>
+</body>
+</html>

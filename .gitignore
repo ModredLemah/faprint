@@ -1,0 +1,18 @@
+# Ignore database configuration / passwords
+.env
+api/config.php
+
+# Ignore user uploads and database backups
+uploads/*
+!uploads/.gitkeep
+*.sql
+
+# Ignore logs and OS files
+logs/*.log
+.DS_Store
+Thumbs.db
+
+database.sql
+/database.sql
+*.sql
+*.SQL

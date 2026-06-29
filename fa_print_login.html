@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FA Print — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<style>
+:root{--primary:#4fc3f7;--accent:#1e40af;--dark:#1f2937;--border:rgba(255,255,255,.12);--text-muted:#94a3b8;--white:#ffffff;--shadow:0 20px 60px rgba(0,0,0,.35);}
+[data-theme="light"]{--bg:#f0f4f8;--card-bg:#ffffff;--border:rgba(0,0,0,.1);--text:#1f2937;--text-muted:#64748b;--shadow:0 20px 60px rgba(0,0,0,.10);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg,#1f2937);color:var(--text,#fff);min-height:100vh;transition:background .3s,color .3s;}
+.navbar{position:sticky;top:0;z-index:100;height:68px;background:rgba(31,41,55,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 5%;}
+[data-theme="light"] .navbar{background:rgba(255,255,255,.95);}
+.nav-brand{font-family:'Sora',sans-serif;font-weight:800;font-size:1.45rem;letter-spacing:-.5px;background:linear-gradient(90deg,var(--primary),#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.theme-toggle{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text-muted);padding:8px 14px;border-radius:8px;font-size:.88rem;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.wrap{min-height:calc(100vh - 68px);display:flex;align-items:center;justify-content:center;padding:40px 20px;position:relative;overflow:hidden;}
+.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18;pointer-events:none;}
+.b1{width:500px;height:500px;background:var(--accent);top:-100px;left:-150px;}
+.b2{width:400px;height:400px;background:var(--primary);bottom:-80px;right:-100px;}
+.card{background:var(--card-bg,rgba(255,255,255,.05));border:1px solid var(--border);border-radius:24px;padding:44px 40px;width:100%;max-width:420px;backdrop-filter:blur(20px);box-shadow:var(--shadow);position:relative;z-index:1;animation:fadeUp .6s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.logo{text-align:center;font-family:'Sora',sans-serif;font-weight:800;font-size:2rem;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.tagline{text-align:center;color:var(--text-muted);font-size:.88rem;margin-bottom:32px;}
+.title{font-family:'Sora',sans-serif;font-size:1.4rem;font-weight:700;margin-bottom:24px;}
+.field{margin-bottom:18px;}
+.field label{display:block;font-size:.83rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;}
+.field input{width:100%;padding:13px 16px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;color:var(--text,#fff);font-size:.95rem;transition:border-color .2s,box-shadow .2s;outline:none;}
+[data-theme="light"] .field input{background:#f8fafc;color:#1f2937;}
+.field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,195,247,.15);}
+.field input::placeholder{color:#4b5563;}
+[data-theme="light"] .field input::placeholder{color:#9ca3af;}
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--primary),var(--accent));border:none;border-radius:10px;color:#fff;font-size:1rem;font-weight:700;letter-spacing:.3px;transition:transform .15s,box-shadow .2s;box-shadow:0 8px 24px rgba(30,64,175,.35);margin-top:4px;}
+.btn:hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(30,64,175,.45);}
+.switch{text-align:center;margin-top:20px;font-size:.9rem;color:var(--text-muted);}
+.switch a{color:var(--primary);font-weight:600;}
+.switch a:hover{text-decoration:underline;}
+.error{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#f87171;border-radius:8px;padding:10px 14px;font-size:.88rem;margin-bottom:16px;display:none;}
+.pass-wrap{position:relative;}
+.pass-wrap input{padding-right:44px;}
+.pass-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);cursor:pointer;font-size:.9rem;}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="fa_print_landing.html" class="nav-brand">FA Print</a>
+  <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-circle-half-stroke"></i> <span id="tlabel">Light Mode</span></button>
+</nav>
+<div class="wrap">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="card">
+    <div class="logo">FA Print</div>
+    <div class="tagline">Far Fast Print — Your 24/7 Printing Bridge</div>
+    <div class="title">Welcome Back</div>
+    <div class="error" id="err"></div>
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="email" placeholder="you@cuom.ac.tz" autocomplete="email"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <div class="pass-wrap">
+        <input type="password" id="pass" placeholder="Your password" autocomplete="current-password"/>
+        <span class="pass-eye" onclick="togglePass()"><i class="fas fa-eye" id="eye-icon"></i></span>
+      </div>
+    </div>
+    <button class="btn" onclick="login()">Log In &amp; Continue</button>
+    <div class="switch">New user? <a href="fa_print_landing.html">Sign up for free</a></div>
+  </div>
+</div>
+<script>
+const saved=localStorage.getItem('fa_theme')||'dark';
+if(saved==='light')applyLight();
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme');if(c==='light'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('fa_theme','dark');document.getElementById('tlabel').textContent='Light Mode';}else{applyLight();}}
+function applyLight(){document.documentElement.setAttribute('data-theme','light');localStorage.setItem('fa_theme','light');document.getElementById('tlabel').textContent='Dark Mode';}
+
+function togglePass(){
+  const p=document.getElementById('pass');const i=document.getElementById('eye-icon');
+  if(p.type==='password'){p.type='text';i.className='fas fa-eye-slash';}else{p.type='password';i.className='fas fa-eye';}
+}
+
+function login(){
+  const email=document.getElementById('email').value.trim();
+  const pass=document.getElementById('pass').value;
+  const err=document.getElementById('err');err.style.display='none';
+  if(!email||!pass){err.textContent='Please enter email and password.';err.style.display='block';return;}
+  const users=JSON.parse(localStorage.getItem('fa_users')||'[]');
+  const user=users.find(u=>u.email===email&&u.pass===pass);
+  if(!user){err.textContent='Incorrect email or password.';err.style.display='block';return;}
+  if(!user.verified){err.textContent='Your account is not verified. Please check your email for the OTP.';err.style.display='block';return;}
+  localStorage.setItem('fa_session',JSON.stringify({id:user.id,name:user.name,email:user.email,role:user.role}));
+  if(user.role==='student')window.location.href='fa_print_student.html';
+  else if(user.role==='vendor')window.location.href='fa_print_vendor.html';
+  else window.location.href='fa_print_landing.html';
+}
+</script>
+</body>
+</html>

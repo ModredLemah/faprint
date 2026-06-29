@@ -1,0 +1,133 @@
+erDiagram
+    users ||--o{ orders : "places (student)"
+    users ||--o| vendors : "owns"
+    users ||--o{ audit_logs : "performs"
+    users ||--o{ notifications : "receives"
+    users ||--o{ support_tickets : "submits"
+    vendors ||--o{ orders : "fulfills"
+    orders ||--o{ documents : "contains"
+    orders ||--o{ payment_logs : "has"
+    orders ||--o{ payment_transactions : "has"
+
+    users {
+        int id PK
+        varchar name
+        varchar email
+        varchar phone
+        varchar password
+        enum role "student/vendor/admin"
+        varchar regno
+        varchar otp
+        tinyint verified
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    vendors {
+        int id PK
+        int user_id FK
+        varchar shop_name
+        decimal price_bw
+        decimal price_color
+        enum status "pending/approved/suspended"
+        decimal latitude
+        decimal longitude
+        varchar location
+        text photos
+        enum queue_status "active/busy/closed"
+        int queue_count
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    orders {
+        int id PK
+        varchar order_number
+        int student_id FK
+        int vendor_id FK
+        decimal total_price
+        enum status "pending/processing/ready/completed/cancelled"
+        enum payment_status "paid/unpaid"
+        varchar payment_method
+        text notes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    documents {
+        int id PK
+        int order_id FK
+        varchar original_name
+        varchar stored_name
+        varchar file_path
+        varchar mime_type
+        int file_size
+        int copies
+        enum color_mode "bw/color"
+        tinyint binding
+        text notes
+        enum status "pending/downloaded/printed/completed"
+        timestamp uploaded_at
+    }
+
+    payment_logs {
+        int id PK
+        int order_id FK
+        varchar phone
+        decimal amount
+        varchar gateway
+        varchar reference
+        enum status "pending/paid/failed/cancelled"
+        datetime created_at
+    }
+
+    payment_transactions {
+        int id PK
+        int order_id FK
+        decimal amount
+        varchar payment_method
+        varchar transaction_id
+        enum status "pending/completed/failed/refunded"
+        longtext response_data
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    notifications {
+        int id PK
+        int user_id FK
+        varchar type
+        varchar title
+        text message
+        varchar related_entity_type
+        int related_entity_id
+        tinyint is_read
+        timestamp created_at
+        timestamp read_at
+    }
+
+    support_tickets {
+        int id PK
+        int user_id FK
+        varchar subject
+        text message
+        enum status "open/in_progress/resolved/closed"
+        enum priority "low/medium/high/urgent"
+        text response
+        timestamp created_at
+        timestamp updated_at
+        timestamp resolved_at
+    }
+
+    audit_logs {
+        int id PK
+        int user_id FK
+        varchar action
+        varchar entity_type
+        int entity_id
+        longtext old_values
+        longtext new_values
+        varchar ip_address
+        text user_agent
+        timestamp created_at
+    }
